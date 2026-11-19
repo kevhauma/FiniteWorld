@@ -23,10 +23,10 @@ A developer test (not an in-game tool, which is a non-goal) that builds the Fini
 
 ## Acceptance criteria
 
-- [ ] Edge rule asserted for all seeds (passes after EDGE-1).
-- [ ] Biome coverage reported per seed now, asserted once ANC-3 lands.
-- [ ] Runs as part of `./gradlew build`, or as a named task if it is too slow for every build (document which in the README).
-- [ ] `./gradlew build` passes.
+- [x] Edge rule asserted for all seeds (passes after EDGE-1). (`GuaranteeGameTest`: all 40 seed/radius runs log `edge 0 land`. Fixed 2026-11-19 by `finiteworld:edge_cap` (`EdgeCapDensityFunction`, wrapping `overworld/final_density.json`): past the radius nothing at or above sea level is solid, as the design's "Beyond the radius" requires. First run before the fix: 37 of 40 seed/radius runs have ocean floor at y=64-70 past the radius, 1-16 of 5,492/7,084 columns per run, e.g. seed 14 radius 4000 at (-2688, 3136) floor y=70. Continentalness there is already inside `EdgeFalloff`'s ocean range (-0.22 to -0.46), so the edge function is wired correctly; vanilla still raises small islands from shallow-ocean continentalness.)
+- [x] Biome coverage reported per seed now, asserted once ANC-3 lands. (`GuaranteeGameTest.biomesInside` logs `[TEST-1] seed N radius R: ... biomes found/47 missing [...]` per run and the union of misses per radius; checklist is the `finite` preset's overworld biome source `possibleBiomes()` minus `#minecraft:is_ocean`, 32-block grid, surface plus 8 cave heights.)
+- [x] Runs as part of `./gradlew build`, or as a named task if it is too slow for every build (document which in the README). (Fabric server game test via Loom `fabricApi.configureTests`; `check` depends on `runGameTest`, about 35 s; documented in README.md Development.)
+- [x] `./gradlew build` passes. (`gradlew.bat build`: BUILD SUCCESSFUL in 40s, JUnit and `runGameTest` included.)
 
 ## Notes
 

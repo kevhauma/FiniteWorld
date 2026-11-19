@@ -27,17 +27,21 @@ See the full design in [docs/](docs/Finite%20World%20%E2%80%94%20Minecraft%20wor
 Requires JDK 25 (`JAVA_HOME` pointing to it). Use the Gradle wrapper; no global Gradle install is needed.
 
 ```sh
-./gradlew build       # build the mod jar into build/libs/
+./gradlew build       # build the mod jar into build/libs/ (runs unit and game tests)
+./gradlew runGameTest # only the game tests
 ./gradlew runClient   # start Minecraft with the mod
 ./gradlew runServer   # start a dedicated server with the mod
 ```
 
 On Windows use `gradlew.bat` in place of `./gradlew`.
 
+`./gradlew build` also runs the guarantee check (`src/gametest/`, a Fabric server game test, about 35 seconds). For 20 fixed seeds at radius 3,000 and 4,000 it asserts that no land rises above sea level past the radius, and it logs which checklist biomes it found inside the radius (lines starting with `[TEST-1]`).
+
 | Path | Contents |
 |---|---|
 | `src/main/` | Common and server code, worldgen data |
 | `src/client/` | Client-only code (Create World screen) |
+| `src/gametest/` | Fabric game tests (guarantee check across seeds) |
 | `docs/` | Design documents |
 | `.claude/skills/` | Agent skills for Fabric modding, worldgen, Gradle and JUnit |
 

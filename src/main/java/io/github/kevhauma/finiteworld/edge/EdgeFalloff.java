@@ -15,7 +15,7 @@ public final class EdgeFalloff {
 	/**
 	 * Vanilla continentalness remapped linearly into the ocean range. It keeps the noise's variation,
 	 * so the deep-ocean/ocean split (-0.455) still falls inside it and both biome families appear.
-	 * Below -0.18 vanilla's offset spline ignores erosion and ridges, so no shoal can break the surface.
+	 * Vanilla's 3D noise can still raise the odd islet here; {@link EdgeCapDensityFunction} keeps it underwater.
 	 */
 	public static float ocean(float continentalness) {
 		return Math.clamp(-0.5F + 0.3F * continentalness, OCEAN_MIN, OCEAN_MAX);

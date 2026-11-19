@@ -1,5 +1,6 @@
 package io.github.kevhauma.finiteworld;
 
+import io.github.kevhauma.finiteworld.edge.EdgeCapDensityFunction;
 import io.github.kevhauma.finiteworld.edge.EdgeDensityFunction;
 
 import net.fabricmc.api.ModInitializer;
@@ -22,6 +23,7 @@ public class FiniteWorld implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, id("edge"), EdgeDensityFunction.CODEC);
+		Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, id("edge_cap"), EdgeCapDensityFunction.CODEC);
 		LOGGER.info("Finite World initialized");
 	}
 

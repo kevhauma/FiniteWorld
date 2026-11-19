@@ -76,7 +76,7 @@ The edge follows the terrain: flat land runs out as a natural coastline, and mou
 
 ## Beyond the radius
 
-Past the edge band, generation is vanilla ocean with no land above sea level. Below the sea floor, it stays vanilla.
+Past the edge band, generation is vanilla ocean with no land above sea level. Vanilla's 3D noise still raises the odd islet at ocean-level continentalness, so past the radius the final density is also capped: nothing at or above sea level is solid. Below the sea floor, it stays vanilla.
 
 - **Ocean:** all vanilla ocean biomes (warm, lukewarm, cold, frozen and their deep variants) with monuments, ocean ruins and shipwrecks. Land that vanilla would raise here (islands, mushroom fields) stays below sea level.
 - **Underground:** caves, aquifers, ore, cave biomes and underground structures (mineshafts, trial chambers, ancient cities) keep generating under the ocean.

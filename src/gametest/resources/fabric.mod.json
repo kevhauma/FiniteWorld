@@ -1,0 +1,15 @@
+{
+	"schemaVersion": 1,
+	"id": "finiteworld-gametest",
+	"version": "1.0.0",
+	"name": "Finite World game tests",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-gametest": [
+			"io.github.kevhauma.finiteworld.GuaranteeGameTest"
+		]
+	},
+	"depends": {
+		"finiteworld": "*"
+	}
+}
