@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "finiteworld",
+	"version": "${version}",
+	"name": "Finite World",
+	"description": "A world type with one landmass of a chosen radius in an endless vanilla ocean, with every vanilla Overworld biome and structure guaranteed on it.",
+	"authors": [
+		"kevhauma"
+	],
+	"license": "CC0-1.0",
+	"icon": "assets/finiteworld/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"io.github.kevhauma.finiteworld.FiniteWorld"
+		],
+		"client": [
+			"io.github.kevhauma.finiteworld.client.FiniteWorldClient"
+		]
+	},
+	"mixins": [
+		"finiteworld.mixins.json",
+		{
+			"config": "finiteworld.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
