@@ -1,7 +1,11 @@
 package io.github.kevhauma.finiteworld;
 
+import io.github.kevhauma.finiteworld.edge.EdgeDensityFunction;
+
 import net.fabricmc.api.ModInitializer;
 
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 
 import org.slf4j.Logger;
@@ -17,6 +21,7 @@ public class FiniteWorld implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, id("edge"), EdgeDensityFunction.CODEC);
 		LOGGER.info("Finite World initialized");
 	}
 

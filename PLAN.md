@@ -10,7 +10,7 @@ and tuning · P3 later options.
 | --- | --- | --- | --- | --- |
 | [BUILD-1](tickets/BUILD-1.md) | P1 | Build/CI | Strip template examples, add JUnit and the Java toolchain | done |
 | [PRE-1](tickets/PRE-1.md) | P1 | World preset | Finite world preset that generates vanilla terrain | done |
-| [EDGE-1](tickets/EDGE-1.md) | P1 | Edge | Edge density function: no land past the radius | open |
+| [EDGE-1](tickets/EDGE-1.md) | P1 | Edge | Edge density function: no land past the radius | done |
 | [EDGE-2](tickets/EDGE-2.md) | P2 | Edge | Natural coastline: wandering outline and adaptive band width | open |
 | [TEST-1](tickets/TEST-1.md) | P1 | Verification | Automated guarantee check across seeds | open |
 | [SPAWN-1](tickets/SPAWN-1.md) | P1 | Spawn | Spawn on land near the centre | open |

@@ -27,6 +27,7 @@ Add a customise screen for the Finite preset, the same way vanilla does for Supe
 - [ ] The Customize button appears for Finite only.
 - [ ] Values below the minimum, or non-numbers, cannot be confirmed.
 - [ ] Verified in game: radius 5000 → land ends at about 5,000; reopen the world → still 5,000.
+- [ ] The radius is written into the world's saved generator settings (`world_gen_settings.dat`), not only referenced by preset id (moved here from EDGE-1, 2026-11-19).
 - [ ] Every density function that takes a radius gets the new value (TEST-1 run at a non-default radius passes).
 - [ ] Client classes live only in `src/client/`.
 - [ ] `./gradlew build` passes.
