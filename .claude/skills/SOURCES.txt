@@ -1,0 +1,3 @@
+mc 22d61ce https://github.com/jahrome907/minecraft-agent-skills
+gradle 6d30a9c https://github.com/gradle/gradle-skills
+copilot 1683f50 https://github.com/github/awesome-copilot
