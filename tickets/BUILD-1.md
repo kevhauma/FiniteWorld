@@ -24,10 +24,10 @@ Remove the Fabric template's example code and set up JUnit 5, so the pure-Java m
 
 ## Acceptance criteria
 
-- [ ] No `Example*` classes or mixin entries are left.
-- [ ] One trivial test runs under `./gradlew test` (replace it with real tests in EDGE-1).
-- [ ] `./gradlew build` passes.
-- [ ] `./gradlew runClient` reaches the title screen with the mod loaded.
+- [x] No `Example*` classes or mixin entries are left. (ExampleMixin and ExampleClientMixin deleted; both mixin configs now have empty lists; no `Example` match under `src/`; built jar contains only FiniteWorld and FiniteWorldClient classes)
+- [x] One trivial test runs under `./gradlew test` (replace it with real tests in EDGE-1). (`src/test/java/io/github/kevhauma/finiteworld/SmokeTest.java`, 1 test, 0 failures in `build/test-results/test`)
+- [x] `./gradlew build` passes. (`gradlew.bat build`: BUILD SUCCESSFUL, JUnit 5.14.2 via BOM, toolchain pinned to 25)
+- [x] `./gradlew runClient` reaches the title screen with the mod loaded. (run/logs/latest.log: 52 mods loaded incl. finiteworld, "Finite World initialized", resource reload finished and atlases created; only error is the expected dev-account 401)
 
 ## Notes
 
