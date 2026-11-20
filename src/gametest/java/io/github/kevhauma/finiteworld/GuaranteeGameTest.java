@@ -2,10 +2,13 @@ package io.github.kevhauma.finiteworld;
 
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanFunction;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
+import io.github.kevhauma.finiteworld.structure.StructureStarts;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,6 +27,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Climate;
@@ -35,6 +39,9 @@ import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.WorldDimensions;
+import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
 import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
@@ -45,6 +52,7 @@ import net.minecraft.world.level.levelgen.presets.WorldPreset;
  * design's hard rules. Edge: no land past the radius (asserted). Biomes: every checklist biome inside
  * the radius, from the biome source with the anchored climate (asserted, ANC-3). SPAWN-1: the initial spawn (vanilla's search,
  * steered by the Finite {@code spawn_target}) is on land near the origin (asserted). UI-1: radius 5,000, a non-default radius.
+ * Structures: which checklist structures vanilla starts inside the radius (reported, STR-1).
  */
 public class GuaranteeGameTest {
 	private static final ResourceKey<WorldPreset> FINITE = ResourceKey.create(Registries.WORLD_PRESET, FiniteWorld.id("finite"));
@@ -59,6 +67,15 @@ public class GuaranteeGameTest {
 	private static final float SPAWN_RADIUS = 3000.0F;
 	private static final int SPAWN_MAX_DISTANCE = 500;
 	private static final List<int[]> SPAWN_SPIRAL = spawnSpiral();
+	private static final List<Long> STRUCTURE_SEEDS = LongStream.rangeClosed(1, 50).boxed().toList();
+	private static final List<Float> STRUCTURE_RADII = List.of(3000.0F, 4000.0F);
+	// The design doc's structure checklist.
+	private static final List<ResourceKey<Structure>> REQUIRED_STRUCTURES = List.of(
+		BuiltinStructures.VILLAGE_PLAINS, BuiltinStructures.VILLAGE_DESERT, BuiltinStructures.VILLAGE_SAVANNA, BuiltinStructures.VILLAGE_SNOWY,
+		BuiltinStructures.VILLAGE_TAIGA, BuiltinStructures.PILLAGER_OUTPOST, BuiltinStructures.WOODLAND_MANSION, BuiltinStructures.DESERT_PYRAMID,
+		BuiltinStructures.JUNGLE_TEMPLE, BuiltinStructures.SWAMP_HUT, BuiltinStructures.IGLOO, BuiltinStructures.RUINED_PORTAL_STANDARD,
+		BuiltinStructures.TRAIL_RUINS, BuiltinStructures.BURIED_TREASURE, BuiltinStructures.MINESHAFT, BuiltinStructures.MINESHAFT_MESA,
+		BuiltinStructures.STRONGHOLD, BuiltinStructures.TRIAL_CHAMBERS, BuiltinStructures.ANCIENT_CITY);
 
 	@GameTest
 	public void guaranteeHoldsAcrossSeeds(GameTestHelper helper) {
@@ -136,6 +153,75 @@ public class GuaranteeGameTest {
 
 		helper.assertTrue(failed.isEmpty(), Component.literal("Spawn not on land within " + SPAWN_MAX_DISTANCE + " blocks: " + failed));
 		helper.succeed();
+	}
+
+	/**
+	 * STR-1: which checklist structures vanilla starts inside the radius, per seed and radius. Report only. Logs
+	 * vanilla's misses per structure (the STR-1 table) and the nearest start to the origin per structure,
+	 * for comparing with {@code /locate structure} from (0, 0).
+	 */
+	@GameTest
+	public void structuresInsideRadius(GameTestHelper helper) {
+		RegistryAccess registries = helper.getLevel().registryAccess();
+		LevelStem overworld = finiteOverworld(registries);
+		NoiseBasedChunkGenerator preset = (NoiseBasedChunkGenerator) overworld.generator();
+		LevelHeightAccessor heights = heights(overworld);
+		StructureTemplateManager templates = helper.getLevel().getServer().getStructureTemplateManager();
+		List<Holder<Structure>> required = REQUIRED_STRUCTURES.stream().<Holder<Structure>>map(registries.lookupOrThrow(Registries.STRUCTURE)::getOrThrow).toList();
+
+		List<StructureResult> results = STRUCTURE_RADII.stream()
+			.flatMap(radius -> STRUCTURE_SEEDS.stream().map(seed -> new Run(seed, radius)))
+			.toList()
+			.parallelStream()
+			.map(run -> {
+				NoiseGeneratorSettings settings = FiniteRadius.withRadius(preset.generatorSettings().value(), run.radius());
+				NoiseBasedChunkGenerator generator = new NoiseBasedChunkGenerator(preset.getBiomeSource(), Holder.direct(settings));
+				StructureStarts starts = structureStarts(generator, registries, templates, heights, run.seed());
+				return new StructureResult(run.seed(), run.radius(), startsInside(starts, run.radius()));
+			})
+			.toList();
+
+		results.forEach(result -> FiniteWorld.LOGGER.info("[STR-1] seed {} radius {}: vanilla misses {}; nearest {}",
+			result.seed(), (int) result.radius(),
+			required.stream().filter(s -> !result.vanilla().containsKey(s)).map(Holder::getRegisteredName).toList(),
+			names(result.vanilla())));
+		STRUCTURE_RADII.forEach(radius -> FiniteWorld.LOGGER.info("[STR-1] radius {}: vanilla misses per structure over {} seeds {}", radius.intValue(), STRUCTURE_SEEDS.size(),
+			required.stream().map(s -> s.getRegisteredName() + "=" + results.stream().filter(r -> r.radius() == radius && !r.vanilla().containsKey(s)).count()).toList()));
+
+		helper.succeed();
+	}
+
+	/** A world's structure state, as its ChunkMap builds it. */
+	private static StructureStarts structureStarts(NoiseBasedChunkGenerator generator, RegistryAccess registries, StructureTemplateManager templates, LevelHeightAccessor heights, long seed) {
+		RandomState random = RandomState.create(registries.lookupOrThrow(Registries.NOISE), seed, generator.generatorSettings().value());
+		ChunkGeneratorStructureState state = generator.createState(registries.lookupOrThrow(Registries.STRUCTURE_SET), random, seed);
+		return new StructureStarts(state, generator, registries, templates, heights);
+	}
+
+	/** Per structure, its start nearest the origin inside the radius. */
+	private static Map<Holder<Structure>, ChunkPos> startsInside(StructureStarts starts, float radius) {
+		return starts.state().possibleStructureSets().stream()
+			.map(Holder::value)
+			.<Map.Entry<Holder<Structure>, ChunkPos>>mapMulti((set, hits) -> starts.startChunks(set, radius).forEach(chunk -> {
+				Holder<Structure> structure = starts.generatingAt(set, chunk);
+				if (structure != null) {
+					hits.accept(Map.entry(structure, chunk));
+				}
+			}))
+			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, GuaranteeGameTest::nearer));
+	}
+
+	private static ChunkPos nearer(ChunkPos a, ChunkPos b) {
+		return distanceSqr(a) <= distanceSqr(b) ? a : b;
+	}
+
+	private static double distanceSqr(ChunkPos chunk) {
+		return (double) chunk.getMiddleBlockX() * chunk.getMiddleBlockX() + (double) chunk.getMiddleBlockZ() * chunk.getMiddleBlockZ();
+	}
+
+	private static List<String> names(Map<Holder<Structure>, ChunkPos> starts) {
+		return starts.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().getRegisteredName()))
+			.map(e -> e.getKey().getRegisteredName() + " " + e.getValue().getMinBlockX() + " " + e.getValue().getMinBlockZ()).toList();
 	}
 
 	/**
@@ -251,6 +337,9 @@ public class GuaranteeGameTest {
 	}
 
 	private record Run(long seed, float radius) {
+	}
+
+	private record StructureResult(long seed, float radius, Map<Holder<Structure>, ChunkPos> vanilla) {
 	}
 
 	private record Result(long seed, float radius, List<String> landPastRadius, int edgeColumns, Set<Holder<Biome>> found, AnchorPlan plan) {

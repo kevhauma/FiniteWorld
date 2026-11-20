@@ -21,10 +21,10 @@ Extend TEST-1 to check the structure checklist the way `/locate` does: enumerate
 
 ## Acceptance criteria
 
-- [ ] TEST-1 reports per-structure coverage.
-- [ ] Miss-rate table recorded in [STR-2](STR-2.md).
-- [ ] Spot-check 3 reported hits with `/locate structure` in game; they match.
-- [ ] `./gradlew build` passes.
+- [x] TEST-1 reports per-structure coverage. (`GuaranteeGameTest.structuresInsideRadius`, seeds 1–50 at radius 3000 and 4000: per world it logs vanilla's misses and the nearest start per structure (`[STR-1] seed …`), then misses per structure over all seeds (`[STR-1] radius …`). Each set's candidates inside the radius pass the placement's frequency and exclusion checks, then the set's weighted pick, each pick checked with `Structure.findValidGenerationPoint` as `/locate` does. The shared code is `structure/StructureStarts`, which STR-2 also uses.)
+- [x] Miss-rate table recorded in [STR-2](STR-2.md). (STR-2 Notes: 13 of 19 structures miss in some world.)
+- [x] Spot-check 3 reported hits with `/locate structure` in game; they match. (Dedicated server, fresh world seed 1 radius 4000, `execute positioned 0 64 0 run locate structure …` over RCON: mansion 1888 240, village_plains 640 816, trail_ruins −992 −992 and jungle_pyramid 64 1776 match the test's nearest starts. The igloo the test reports at −144 −944 exists too (`locate` from beside it: 11 blocks away), but `locate` from the origin returns −880 −1024: both start chunks sit in the same ring of vanilla's region search, and vanilla returns the first hit in a ring, not the nearest.)
+- [x] `./gradlew build` passes. (`gradlew.bat build runGameTest`: BUILD SUCCESSFUL, all 7 game tests passed.)
 
 ## Notes
 
