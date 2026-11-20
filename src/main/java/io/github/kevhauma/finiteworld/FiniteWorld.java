@@ -1,5 +1,7 @@
 package io.github.kevhauma.finiteworld;
 
+import io.github.kevhauma.finiteworld.anchor.AnchorDensityFunction;
+import io.github.kevhauma.finiteworld.anchor.AnchorPlanFunction;
 import io.github.kevhauma.finiteworld.edge.EdgeCapDensityFunction;
 import io.github.kevhauma.finiteworld.edge.EdgeDensityFunction;
 
@@ -24,6 +26,8 @@ public class FiniteWorld implements ModInitializer {
 	public void onInitialize() {
 		Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, id("edge"), EdgeDensityFunction.CODEC);
 		Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, id("edge_cap"), EdgeCapDensityFunction.CODEC);
+		Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, id("anchor"), AnchorDensityFunction.CODEC);
+		Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, id("anchor_plan"), AnchorPlanFunction.CODEC);
 		LOGGER.info("Finite World initialized");
 	}
 

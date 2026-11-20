@@ -6,7 +6,8 @@
 	"environment": "*",
 	"entrypoints": {
 		"fabric-gametest": [
-			"io.github.kevhauma.finiteworld.GuaranteeGameTest"
+			"io.github.kevhauma.finiteworld.GuaranteeGameTest",
+			"io.github.kevhauma.finiteworld.AnchorPlanGameTest"
 		]
 	},
 	"depends": {

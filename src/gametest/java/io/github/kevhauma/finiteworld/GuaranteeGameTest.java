@@ -1,5 +1,6 @@
 package io.github.kevhauma.finiteworld;
 
+import io.github.kevhauma.finiteworld.anchor.AnchorPlanFunction;
 import io.github.kevhauma.finiteworld.edge.EdgeCapDensityFunction;
 import io.github.kevhauma.finiteworld.edge.EdgeDensityFunction;
 
@@ -172,7 +173,7 @@ public class GuaranteeGameTest {
 		return offsets;
 	}
 
-	private static LevelStem finiteOverworld(RegistryAccess registries) {
+	static LevelStem finiteOverworld(RegistryAccess registries) {
 		return registries.lookupOrThrow(Registries.WORLD_PRESET).getValueOrThrow(FINITE).overworld().orElseThrow();
 	}
 
@@ -210,7 +211,7 @@ public class GuaranteeGameTest {
 			});
 	}
 
-	/** The Finite settings with every {@code finiteworld:edge} and {@code finiteworld:edge_cap} radius replaced (the radius only lives in continents.json until UI-1). */
+	/** The Finite settings with every {@code finiteworld:edge}, {@code finiteworld:edge_cap} and {@code finiteworld:anchor_plan} radius replaced (the radius lives in continents.json and anchor_plan.json until UI-1). */
 	private static NoiseGeneratorSettings withRadius(NoiseGeneratorSettings settings, float radius) {
 		int[] edges = {0};
 		DfRewriteRule rule = new DfRewriteRule() {
@@ -218,7 +219,10 @@ public class GuaranteeGameTest {
 			public DensityFunction rewrite(DensityFunction function) {
 				if (function instanceof EdgeDensityFunction edge) {
 					edges[0]++;
-					return new EdgeDensityFunction(edge.input(), radius, edge.band());
+					return new EdgeDensityFunction(rewrite(edge.input()), radius, edge.band());
+				}
+				if (function instanceof AnchorPlanFunction plan) {
+					return new AnchorPlanFunction(radius, plan.temperature(), plan.vegetation(), plan.continents(), plan.erosion(), plan.ridges());
 				}
 				if (function instanceof EdgeCapDensityFunction cap) {
 					return new EdgeCapDensityFunction(cap.input().rewriteChildren(this), radius, cap.seaLevel());

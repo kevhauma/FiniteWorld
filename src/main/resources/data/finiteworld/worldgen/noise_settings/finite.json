@@ -115,8 +115,8 @@
     "erosion": "finiteworld:overworld/erosion",
     "final_density": "finiteworld:overworld/final_density",
     "ridges": "finiteworld:overworld/ridges",
-    "temperature": "minecraft:overworld/temperature",
-    "vegetation": "minecraft:overworld/vegetation"
+    "temperature": "finiteworld:overworld/temperature",
+    "vegetation": "finiteworld:overworld/vegetation"
   },
   "sea_level": 63,
   "spawn_target": [

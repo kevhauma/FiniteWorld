@@ -1,0 +1,9 @@
+{
+  "type": "finiteworld:anchor_plan",
+  "radius": 4000.0,
+  "temperature": "minecraft:overworld/temperature",
+  "vegetation": "minecraft:overworld/vegetation",
+  "continents": "minecraft:overworld/continents",
+  "erosion": "minecraft:overworld/erosion",
+  "ridges": "minecraft:overworld/ridges"
+}

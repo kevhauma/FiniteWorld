@@ -22,11 +22,11 @@ Density functions never see the world seed directly, but the anchor plan depends
 
 ## Acceptance criteria
 
-- [ ] Proof of concept: a stub plan is computed exactly once per world load (log line), and never for Default worlds.
-- [ ] Same seed gives the same stub plan across restarts and across client and dedicated server.
-- [ ] Planning on a coarse grid across a 4,000-radius disc adds a measured, acceptable time to world creation. Record the number.
-- [ ] Design doc updated with the mechanism.
-- [ ] `./gradlew build` passes.
+- [x] Proof of concept: a stub plan is computed exactly once per world load (log line), and never for Default worlds. (`AnchorPlanFunction` caches the plan per `RandomState` compile context; `AnchorPlanGameTest.planOncePerWorldNeverForDefault` asserts one plan after compiling the whole Finite router and none for the vanilla Overworld router. Dedicated server (`runServer`, seed 12345): one `[ANC-1] Planned 10 anchors …` line per Finite world load, on creation and on reload; none for a Default world with the same seed.)
+- [x] Same seed gives the same stub plan across restarts and across client and dedicated server. (Seed 12345 gives plan hash 1206702632 in two game-test runs, two dedicated-server loads (create, then reload) and a singleplayer client load of the same world (`runClient --quickPlaySingleplayer`, `run/logs/latest.log`); `AnchorPlanGameTest` also asserts two fresh `RandomState`s with one seed give equal plans and another seed a different one.)
+- [x] Planning on a coarse grid across a 4,000-radius disc adds a measured, acceptable time to world creation. Record the number. (Five parameters on a 64-block grid, 12,281 points: 46–73 ms per world when it plans alone (game test, dedicated server create and reload; world creation took 4.4 s), up to about 230 ms with 16 worlds planning in parallel in `GuaranteeGameTest`. Recorded in the design doc.)
+- [x] Design doc updated with the mechanism. (Technical approach → "Anchor plan (ANC-1)".)
+- [x] `./gradlew build` passes. (`gradlew.bat build runGameTest`: BUILD SUCCESSFUL, unit tests incl. `AnchorPlannerTest`, all 4 game tests passed.)
 
 ## Notes
 
