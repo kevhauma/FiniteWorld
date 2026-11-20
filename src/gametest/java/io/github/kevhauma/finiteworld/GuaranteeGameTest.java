@@ -2,8 +2,6 @@ package io.github.kevhauma.finiteworld;
 
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanFunction;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
-import io.github.kevhauma.finiteworld.edge.EdgeCapDensityFunction;
-import io.github.kevhauma.finiteworld.edge.EdgeDensityFunction;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,12 +30,11 @@ import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSource;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.levelgen.Aquifer;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
-import net.minecraft.world.level.levelgen.NoiseRouter;
 import net.minecraft.world.level.levelgen.RandomState;
+import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
 import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
@@ -47,12 +44,12 @@ import net.minecraft.world.level.levelgen.presets.WorldPreset;
  * TEST-1: builds the Finite world preset's generator for fixed seeds and radii and checks the
  * design's hard rules. Edge: no land past the radius (asserted). Biomes: every checklist biome inside
  * the radius, from the biome source with the anchored climate (asserted, ANC-3). SPAWN-1: the initial spawn (vanilla's search,
- * steered by the Finite {@code spawn_target}) is on land near the origin (asserted).
+ * steered by the Finite {@code spawn_target}) is on land near the origin (asserted). UI-1: radius 5,000, a non-default radius.
  */
 public class GuaranteeGameTest {
 	private static final ResourceKey<WorldPreset> FINITE = ResourceKey.create(Registries.WORLD_PRESET, FiniteWorld.id("finite"));
 	private static final List<Long> SEEDS = LongStream.rangeClosed(1, 20).boxed().toList();
-	private static final List<Float> RADII = List.of(3000.0F, 4000.0F);
+	private static final List<Float> RADII = List.of(3000.0F, 4000.0F, 5000.0F);
 	// Ocean floor is sampled on this grid from the radius out to EDGE_DEPTH past it.
 	private static final int EDGE_STEP = 64;
 	private static final int EDGE_DEPTH = 1024;
@@ -78,7 +75,7 @@ public class GuaranteeGameTest {
 			.toList()
 			.parallelStream()
 			.map(run -> {
-				NoiseGeneratorSettings settings = withRadius(preset.generatorSettings().value(), run.radius());
+				NoiseGeneratorSettings settings = FiniteRadius.withRadius(preset.generatorSettings().value(), run.radius());
 				NoiseBasedChunkGenerator generator = new NoiseBasedChunkGenerator(biomes, Holder.direct(settings));
 				RandomState random = RandomState.create(registries.lookupOrThrow(Registries.NOISE), run.seed(), settings);
 				List<int[]> edge = grid(EDGE_STEP, run.radius(), run.radius() + EDGE_DEPTH).toList();
@@ -87,7 +84,7 @@ public class GuaranteeGameTest {
 					.filter(p -> p[2] > settings.seaLevel())
 					.map(p -> "(" + p[0] + ", " + p[1] + ") floor y=" + p[2] + " C=" + random.sampleBlockValueUncached(settings.noiseRouter().continents(), p[0], 0, p[1]))
 					.toList();
-				AnchorPlan plan = ((AnchorPlanFunction.Sampler) random.getSampler(planNode(settings))).plan();
+				AnchorPlan plan = planOf(random, settings);
 				return new Result(run.seed(), run.radius(), land, edge.size(), biomesInside(biomes, random, run.radius(), plan), plan);
 			})
 			.toList();
@@ -121,8 +118,7 @@ public class GuaranteeGameTest {
 		LevelStem overworld = finiteOverworld(registries);
 		NoiseBasedChunkGenerator preset = (NoiseBasedChunkGenerator) overworld.generator();
 		LevelHeightAccessor heights = heights(overworld);
-		// withRadius leaves spawn_target alone; its continents differ only within 500 blocks of the radius, far past any spawn.
-		NoiseGeneratorSettings settings = withRadius(preset.generatorSettings().value(), SPAWN_RADIUS);
+		NoiseGeneratorSettings settings = FiniteRadius.withRadius(preset.generatorSettings().value(), SPAWN_RADIUS);
 		NoiseBasedChunkGenerator generator = new NoiseBasedChunkGenerator(preset.getBiomeSource(), Holder.direct(settings));
 		// The Default world's generator, logged beside each Finite spawn for comparison with a dedicated server.
 		NoiseBasedChunkGenerator vanilla = new NoiseBasedChunkGenerator(preset.getBiomeSource(), registries.lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(NoiseGeneratorSettings.OVERWORLD));
@@ -188,6 +184,10 @@ public class GuaranteeGameTest {
 		return registries.lookupOrThrow(Registries.WORLD_PRESET).getValueOrThrow(FINITE).overworld().orElseThrow();
 	}
 
+	static WorldDimensions finiteDimensions(RegistryAccess registries) {
+		return registries.lookupOrThrow(Registries.WORLD_PRESET).getValueOrThrow(FINITE).createWorldDimensions();
+	}
+
 	private static LevelHeightAccessor heights(LevelStem stem) {
 		DimensionType dimension = stem.type().value();
 		return LevelHeightAccessor.create(dimension.minY(), dimension.height());
@@ -209,6 +209,11 @@ public class GuaranteeGameTest {
 			found.accept(biomes.getNoiseBiome(Climate.target(t, h, c, e, 0.0F, w)));
 			CAVE_YS.forEach(y -> found.accept(biomes.getNoiseBiome(Climate.target(t, h, c, e, climate.depth().sampleValue(x, y, z), w))));
 		}).collect(Collectors.toSet());
+	}
+
+	/** The plan this world (RandomState) uses, read through the settings' own plan node. */
+	static AnchorPlan planOf(RandomState random, NoiseGeneratorSettings settings) {
+		return ((AnchorPlanFunction.Sampler) random.getSampler(planNode(settings))).plan();
 	}
 
 	/** The settings' {@code finiteworld:anchor_plan} node, so its plan is read from the node these settings compile. */
@@ -235,37 +240,6 @@ public class GuaranteeGameTest {
 				double distance = Math.sqrt((double) p[0] * p[0] + (double) p[1] * p[1]);
 				return distance >= min && distance <= max;
 			});
-	}
-
-	/** The Finite settings with every {@code finiteworld:edge}, {@code finiteworld:edge_cap} and {@code finiteworld:anchor_plan} radius replaced (the radius lives in continents.json and anchor_plan.json until UI-1). */
-	private static NoiseGeneratorSettings withRadius(NoiseGeneratorSettings settings, float radius) {
-		int[] edges = {0};
-		DfRewriteRule rule = new DfRewriteRule() {
-			@Override
-			public DensityFunction rewrite(DensityFunction function) {
-				if (function instanceof EdgeDensityFunction edge) {
-					edges[0]++;
-					return new EdgeDensityFunction(rewrite(edge.input()), radius, edge.band());
-				}
-				if (function instanceof AnchorPlanFunction plan) {
-					return new AnchorPlanFunction(radius, plan.band(), plan.biomes(), plan.exclude(), plan.temperature(), plan.vegetation(), plan.continents(), plan.erosion(), plan.ridges());
-				}
-				if (function instanceof EdgeCapDensityFunction cap) {
-					return new EdgeCapDensityFunction(cap.input().rewriteChildren(this), radius, cap.seaLevel());
-				}
-				return function.rewriteChildren(this);
-			}
-		};
-		NoiseRouter r = settings.noiseRouter();
-		NoiseRouter router = new NoiseRouter(rule.rewrite(r.temperature()), rule.rewrite(r.vegetation()), rule.rewrite(r.continents()),
-			rule.rewrite(r.erosion()), rule.rewrite(r.depth()), rule.rewrite(r.ridges()), rule.rewrite(r.chunkSurfaceLevel()), rule.rewrite(r.finalDensity()));
-		var aquifers = settings.aquifers().map(a -> new Aquifer.Config(rule.rewrite(a.barrierNoise()), rule.rewrite(a.fluidLevelFloodednessNoise()),
-			rule.rewrite(a.fluidLevelSpreadNoise()), rule.rewrite(a.lavaNoise()), rule.rewrite(a.exclusion()), rule.rewrite(a.surfaceLevel())));
-		if (edges[0] == 0) {
-			throw new IllegalStateException("No finiteworld:edge in the Finite noise settings");
-		}
-		return new NoiseGeneratorSettings(settings.noiseSettings(), settings.defaultBlock(), settings.defaultFluid(), router, settings.materialRule(),
-			settings.spawnTarget(), settings.seaLevel(), settings.disableMobGeneration(), aquifers, settings.useLegacyRandomSource(), settings.debugFunctions());
 	}
 
 	private static Set<Holder<Biome>> missing(Set<Holder<Biome>> checklist, Result result) {

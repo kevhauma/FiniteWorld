@@ -1,3 +1,6 @@
 {
-  "generator.finiteworld.finite": "Finite"
+  "generator.finiteworld.finite": "Finite",
+  "createWorld.customize.finiteworld.title": "Finite World Settings",
+  "createWorld.customize.finiteworld.radius": "Island radius (blocks)",
+  "createWorld.customize.finiteworld.range": "A whole number from %s to %s"
 }

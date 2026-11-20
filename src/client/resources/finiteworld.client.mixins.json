@@ -2,7 +2,9 @@
 	"required": true,
 	"package": "io.github.kevhauma.finiteworld.client.mixin",
 	"compatibilityLevel": "JAVA_25",
-	"client": [],
+	"client": [
+		"WorldCreationUiStateMixin"
+	],
 	"injectors": {
 		"defaultRequire": 1
 	},
