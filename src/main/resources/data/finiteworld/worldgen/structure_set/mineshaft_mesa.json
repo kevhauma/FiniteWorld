@@ -1,0 +1,12 @@
+{
+	"structures": [
+		{
+			"structure": "minecraft:mineshaft_mesa",
+			"weight": 1
+		}
+	],
+	"placement": {
+		"type": "finiteworld:anchored",
+		"structure": "minecraft:mineshaft_mesa"
+	}
+}

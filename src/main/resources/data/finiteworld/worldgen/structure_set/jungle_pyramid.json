@@ -1,0 +1,12 @@
+{
+	"structures": [
+		{
+			"structure": "minecraft:jungle_pyramid",
+			"weight": 1
+		}
+	],
+	"placement": {
+		"type": "finiteworld:anchored",
+		"structure": "minecraft:jungle_pyramid"
+	}
+}

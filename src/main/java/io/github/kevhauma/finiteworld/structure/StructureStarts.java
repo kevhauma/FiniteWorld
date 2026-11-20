@@ -8,9 +8,11 @@ import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.Holder;
+import net.minecraft.core.QuartPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
+import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
@@ -27,12 +29,14 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 /**
  * Which structure vanilla starts at a chunk, without generating it: the placement's candidates, then
  * the set's weighted pick (ChunkGenerator.createStructures), each pick checked as {@code /locate} does
- * (Structure.findValidGenerationPoint). Used by the guarantee test (STR-1).
+ * (Structure.findValidGenerationPoint). Used by the fallback (STR-2) and the guarantee test (STR-1).
  */
 public record StructureStarts(ChunkGeneratorStructureState state, ChunkGenerator generator, RegistryAccess registries, StructureTemplateManager templates, LevelHeightAccessor heights) {
 	/** The set's start chunks whose centre is inside the radius: placement candidates that pass its frequency and exclusion checks. */
 	public Stream<ChunkPos> startChunks(StructureSet set, float radius) {
 		Stream<ChunkPos> candidates = switch (set.placement()) {
+			case AnchoredStructurePlacement anchored -> this.state.getRingPositionsFor(anchored).stream();
+			// shortcut: calling this for a rings set while the state computes its ring positions races; no fallback checks a rings set (stronghold never misses, STR-1).
 			case ConcentricRingsStructurePlacement rings -> this.state.getRingPositionsFor(rings).stream();
 			case RandomSpreadStructurePlacement spread -> {
 				int regions = (int) Math.ceil(radius / 16.0 / spread.spacing());
@@ -76,6 +80,15 @@ public record StructureStarts(ChunkGeneratorStructureState state, ChunkGenerator
 			}
 		}
 		return this.findStart(structure, chunk);
+	}
+
+	/** A cheap check before {@link #canStart}: one of the structure's biomes somewhere in the chunk centre's column, every 16 blocks. */
+	public boolean hasBiomeInColumn(Holder<Structure> structure, ChunkPos chunk) {
+		BiomeResolver biomes = this.generator.getBiomeSource().createResolver(this.state.randomState().createClimateSampler(SamplerContext.EMPTY_UNCACHED));
+		int x = QuartPos.fromBlock(chunk.getMiddleBlockX());
+		int z = QuartPos.fromBlock(chunk.getMiddleBlockZ());
+		return IntStream.iterate(QuartPos.fromBlock(this.heights.getMinY()), y -> y <= QuartPos.fromBlock(this.heights.getMaxY()), y -> y + 4)
+			.anyMatch(y -> structure.value().biomes().contains(biomes.getNoiseBiome(x, y, z)));
 	}
 
 	private boolean findStart(Holder<Structure> structure, ChunkPos chunk) {

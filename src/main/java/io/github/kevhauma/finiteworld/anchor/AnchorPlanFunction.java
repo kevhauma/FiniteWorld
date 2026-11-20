@@ -7,8 +7,10 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,6 +23,8 @@ import net.minecraft.util.Interval;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
+import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
+import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
@@ -65,6 +69,21 @@ public record AnchorPlanFunction(
 	/** How many plans have been computed in this JVM (one per Finite world load). */
 	public static long plansComputed() {
 		return PLANS.stats().loadCount();
+	}
+
+	/** The plan of the world (RandomState) these settings belong to, read through the settings' own plan node; empty without one (Default worlds), which plans nothing. */
+	public static Optional<AnchorPlan> planOf(RandomState random, NoiseGeneratorSettings settings) {
+		List<AnchorPlanFunction> found = new ArrayList<>();
+		new DfRewriteRule() {
+			@Override
+			public DensityFunction rewrite(DensityFunction function) {
+				if (function instanceof AnchorPlanFunction plan) {
+					found.add(plan);
+				}
+				return function.rewriteChildren(this);
+			}
+		}.rewrite(settings.noiseRouter().temperature());
+		return found.stream().findFirst().map(node -> ((Sampler) random.getSampler(node)).plan());
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package io.github.kevhauma.finiteworld;
 
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanFunction;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
+import io.github.kevhauma.finiteworld.structure.AnchoredStructurePlacement;
 import io.github.kevhauma.finiteworld.structure.StructureStarts;
 
 import java.util.ArrayList;
@@ -42,8 +43,6 @@ import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
-import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
-import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
 import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 
@@ -52,7 +51,7 @@ import net.minecraft.world.level.levelgen.presets.WorldPreset;
  * design's hard rules. Edge: no land past the radius (asserted). Biomes: every checklist biome inside
  * the radius, from the biome source with the anchored climate (asserted, ANC-3). SPAWN-1: the initial spawn (vanilla's search,
  * steered by the Finite {@code spawn_target}) is on land near the origin (asserted). UI-1: radius 5,000, a non-default radius.
- * Structures: which checklist structures vanilla starts inside the radius (reported, STR-1).
+ * Structures: every checklist structure starts inside the radius, from vanilla or an anchored fallback (STR-1 reports, STR-2 asserts).
  */
 public class GuaranteeGameTest {
 	private static final ResourceKey<WorldPreset> FINITE = ResourceKey.create(Registries.WORLD_PRESET, FiniteWorld.id("finite"));
@@ -156,7 +155,8 @@ public class GuaranteeGameTest {
 	}
 
 	/**
-	 * STR-1: which checklist structures vanilla starts inside the radius, per seed and radius. Report only. Logs
+	 * STR-1 and STR-2: every checklist structure starts inside the radius, from vanilla's own sets or from
+	 * a {@code finiteworld:anchored} fallback, and a fallback exists only where vanilla starts none. Logs
 	 * vanilla's misses per structure (the STR-1 table) and the nearest start to the origin per structure,
 	 * for comparing with {@code /locate structure} from (0, 0).
 	 */
@@ -177,31 +177,52 @@ public class GuaranteeGameTest {
 				NoiseGeneratorSettings settings = FiniteRadius.withRadius(preset.generatorSettings().value(), run.radius());
 				NoiseBasedChunkGenerator generator = new NoiseBasedChunkGenerator(preset.getBiomeSource(), Holder.direct(settings));
 				StructureStarts starts = structureStarts(generator, registries, templates, heights, run.seed());
-				return new StructureResult(run.seed(), run.radius(), startsInside(starts, run.radius()));
+				return new StructureResult(run.seed(), run.radius(), startsInside(starts, run.radius(), false), startsInside(starts, run.radius(), true));
 			})
 			.toList();
 
-		results.forEach(result -> FiniteWorld.LOGGER.info("[STR-1] seed {} radius {}: vanilla misses {}; nearest {}",
+		results.forEach(result -> FiniteWorld.LOGGER.info("[STR-1] seed {} radius {}: vanilla misses {}; fallbacks {}; nearest {}",
 			result.seed(), (int) result.radius(),
 			required.stream().filter(s -> !result.vanilla().containsKey(s)).map(Holder::getRegisteredName).toList(),
-			names(result.vanilla())));
+			names(result.fallback()),
+			names(merge(result.vanilla(), result.fallback()))));
 		STRUCTURE_RADII.forEach(radius -> FiniteWorld.LOGGER.info("[STR-1] radius {}: vanilla misses per structure over {} seeds {}", radius.intValue(), STRUCTURE_SEEDS.size(),
 			required.stream().map(s -> s.getRegisteredName() + "=" + results.stream().filter(r -> r.radius() == radius && !r.vanilla().containsKey(s)).count()).toList()));
 
+		List<String> missing = results.stream()
+			.filter(r -> !merge(r.vanilla(), r.fallback()).keySet().containsAll(required))
+			.map(r -> "seed " + r.seed() + " radius " + (int) r.radius() + " missing "
+				+ required.stream().filter(s -> !r.vanilla().containsKey(s) && !r.fallback().containsKey(s)).map(Holder::getRegisteredName).toList())
+			.toList();
+		helper.assertTrue(missing.isEmpty(), Component.literal("Checklist structures missing inside the radius: " + String.join("; ", missing)));
+		List<String> needless = results.stream()
+			.flatMap(r -> r.fallback().keySet().stream().filter(r.vanilla()::containsKey).map(s -> "seed " + r.seed() + " radius " + (int) r.radius() + " " + s.getRegisteredName()))
+			.toList();
+		helper.assertTrue(needless.isEmpty(), Component.literal("Fallback placed although vanilla starts one: " + needless));
+
+		// Default worlds: the anchored sets are global data, but without a plan they place nothing and plan nothing.
+		long plansBefore = AnchorPlanFunction.plansComputed();
+		NoiseBasedChunkGenerator vanilla = new NoiseBasedChunkGenerator(preset.getBiomeSource(), registries.lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(NoiseGeneratorSettings.OVERWORLD));
+		StructureStarts defaults = structureStarts(vanilla, registries, templates, heights, STRUCTURE_SEEDS.getFirst());
+		Map<Holder<Structure>, ChunkPos> defaultFallbacks = startsInside(defaults, Float.MAX_VALUE, true);
+		helper.assertTrue(defaultFallbacks.isEmpty() && AnchorPlanFunction.plansComputed() == plansBefore,
+			Component.literal("A Default world placed fallbacks " + names(defaultFallbacks) + " or planned anchors"));
 		helper.succeed();
 	}
 
-	/** A world's structure state, as its ChunkMap builds it. */
+	/** A world's structure state, registered with the anchored fallback as the ChunkMap mixin does for a real world. */
 	private static StructureStarts structureStarts(NoiseBasedChunkGenerator generator, RegistryAccess registries, StructureTemplateManager templates, LevelHeightAccessor heights, long seed) {
 		RandomState random = RandomState.create(registries.lookupOrThrow(Registries.NOISE), seed, generator.generatorSettings().value());
 		ChunkGeneratorStructureState state = generator.createState(registries.lookupOrThrow(Registries.STRUCTURE_SET), random, seed);
+		AnchoredStructurePlacement.register(state, generator, registries, templates, heights);
 		return new StructureStarts(state, generator, registries, templates, heights);
 	}
 
-	/** Per structure, its start nearest the origin inside the radius. */
-	private static Map<Holder<Structure>, ChunkPos> startsInside(StructureStarts starts, float radius) {
+	/** Per structure, its start nearest the origin inside the radius, from the anchored sets or from vanilla's. */
+	private static Map<Holder<Structure>, ChunkPos> startsInside(StructureStarts starts, float radius, boolean anchored) {
 		return starts.state().possibleStructureSets().stream()
 			.map(Holder::value)
+			.filter(set -> set.placement() instanceof AnchoredStructurePlacement == anchored)
 			.<Map.Entry<Holder<Structure>, ChunkPos>>mapMulti((set, hits) -> starts.startChunks(set, radius).forEach(chunk -> {
 				Holder<Structure> structure = starts.generatingAt(set, chunk);
 				if (structure != null) {
@@ -209,6 +230,10 @@ public class GuaranteeGameTest {
 				}
 			}))
 			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, GuaranteeGameTest::nearer));
+	}
+
+	private static Map<Holder<Structure>, ChunkPos> merge(Map<Holder<Structure>, ChunkPos> a, Map<Holder<Structure>, ChunkPos> b) {
+		return Stream.concat(a.entrySet().stream(), b.entrySet().stream()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, GuaranteeGameTest::nearer));
 	}
 
 	private static ChunkPos nearer(ChunkPos a, ChunkPos b) {
@@ -299,22 +324,7 @@ public class GuaranteeGameTest {
 
 	/** The plan this world (RandomState) uses, read through the settings' own plan node. */
 	static AnchorPlan planOf(RandomState random, NoiseGeneratorSettings settings) {
-		return ((AnchorPlanFunction.Sampler) random.getSampler(planNode(settings))).plan();
-	}
-
-	/** The settings' {@code finiteworld:anchor_plan} node, so its plan is read from the node these settings compile. */
-	private static AnchorPlanFunction planNode(NoiseGeneratorSettings settings) {
-		List<AnchorPlanFunction> found = new ArrayList<>();
-		new DfRewriteRule() {
-			@Override
-			public DensityFunction rewrite(DensityFunction function) {
-				if (function instanceof AnchorPlanFunction plan) {
-					found.add(plan);
-				}
-				return function.rewriteChildren(this);
-			}
-		}.rewrite(settings.noiseRouter().temperature());
-		return found.getFirst();
+		return AnchorPlanFunction.planOf(random, settings).orElseThrow();
 	}
 
 	/** Grid points (x, z) whose distance from the origin lies in [min, max]. */
@@ -339,7 +349,7 @@ public class GuaranteeGameTest {
 	private record Run(long seed, float radius) {
 	}
 
-	private record StructureResult(long seed, float radius, Map<Holder<Structure>, ChunkPos> vanilla) {
+	private record StructureResult(long seed, float radius, Map<Holder<Structure>, ChunkPos> vanilla, Map<Holder<Structure>, ChunkPos> fallback) {
 	}
 
 	private record Result(long seed, float radius, List<String> landPastRadius, int edgeColumns, Set<Holder<Biome>> found, AnchorPlan plan) {

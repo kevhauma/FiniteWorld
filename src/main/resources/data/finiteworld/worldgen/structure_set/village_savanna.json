@@ -1,0 +1,12 @@
+{
+	"structures": [
+		{
+			"structure": "minecraft:village_savanna",
+			"weight": 1
+		}
+	],
+	"placement": {
+		"type": "finiteworld:anchored",
+		"structure": "minecraft:village_savanna"
+	}
+}

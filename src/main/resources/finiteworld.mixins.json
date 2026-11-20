@@ -3,6 +3,8 @@
 	"package": "io.github.kevhauma.finiteworld.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
+		"ChunkGeneratorStructureStateMixin",
+		"ChunkMapMixin",
 		"NoiseBasedChunkGeneratorMixin"
 	],
 	"server": [

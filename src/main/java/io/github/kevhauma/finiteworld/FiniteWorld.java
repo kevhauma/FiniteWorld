@@ -4,6 +4,7 @@ import io.github.kevhauma.finiteworld.anchor.AnchorDensityFunction;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanFunction;
 import io.github.kevhauma.finiteworld.edge.EdgeCapDensityFunction;
 import io.github.kevhauma.finiteworld.edge.EdgeDensityFunction;
+import io.github.kevhauma.finiteworld.structure.AnchoredStructurePlacement;
 
 import net.fabricmc.api.ModInitializer;
 
@@ -28,6 +29,7 @@ public class FiniteWorld implements ModInitializer {
 		Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, id("edge_cap"), EdgeCapDensityFunction.CODEC);
 		Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, id("anchor"), AnchorDensityFunction.CODEC);
 		Registry.register(BuiltInRegistries.DENSITY_FUNCTION_TYPE, id("anchor_plan"), AnchorPlanFunction.CODEC);
+		Registry.register(BuiltInRegistries.STRUCTURE_PLACEMENT, id("anchored"), AnchoredStructurePlacement.CODEC);
 		LOGGER.info("Finite World initialized");
 	}
 
