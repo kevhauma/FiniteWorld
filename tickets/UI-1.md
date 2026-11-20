@@ -35,4 +35,5 @@ Add a customise screen for the Finite preset, the same way vanilla does for Supe
 ## Notes
 
 - Needs EDGE-1 and ANC-3, so one change covers every radius field.
+- `finiteworld:spawn_distance` (SPAWN-1, referenced from `spawn_target`) is also a `finiteworld:edge`, but its 800/500 is a spawn ramp, not the world radius. Leave it out of the swap.
 - **Open question:** a dedicated server can pick `level-type=finiteworld:finite` but has no screen, so it always gets the default radius. Decide whether that's acceptable; the design doc doesn't mention servers.

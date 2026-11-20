@@ -97,7 +97,7 @@ Because terrain and biomes both read the same climate noises, steering those noi
 - **Biome source.** Vanilla's multi-noise biome source reads the steered climate, so a custom biome source should not be needed. Add one only if testing shows gaps.
 - **Radius UI.** A customise screen for the Finite preset, using the same hook vanilla uses for Superflat and Single Biome, that writes the radius into the generator settings and enforces the minimum.
 - **Structures.** Vanilla structure sets stay unchanged. Required structures get an extra fixed-position placement taken from the anchor plan, used only when vanilla placement would miss them.
-- **Spawn.** Spawn is forced near the centre of the land, so the player never starts at sea.
+- **Spawn.** Spawn is forced near the centre of the land, so the player never starts at sea. Vanilla's spawn search does this with the Finite noise settings' `spawn_target`, which adds a distance term (`finiteworld:spawn_distance`) so the search stays within about 300 blocks of the origin (SPAWN-1).
 
 ## Decision log
 

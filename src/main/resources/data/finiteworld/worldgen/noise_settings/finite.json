@@ -129,6 +129,10 @@
         -1.0,
         1.0
       ],
+      "finiteworld:spawn_distance": [
+        1.0,
+        1.0
+      ],
       "finiteworld:overworld/ridges": [
         -1.0,
         -0.16
@@ -149,6 +153,10 @@
       ],
       "finiteworld:overworld/erosion": [
         -1.0,
+        1.0
+      ],
+      "finiteworld:spawn_distance": [
+        1.0,
         1.0
       ],
       "finiteworld:overworld/ridges": [

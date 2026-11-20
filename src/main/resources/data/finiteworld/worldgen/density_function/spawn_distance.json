@@ -1,0 +1,6 @@
+{
+  "type": "finiteworld:edge",
+  "input": 1.0,
+  "radius": 800.0,
+  "band": 500.0
+}
