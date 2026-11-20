@@ -222,7 +222,7 @@ public class GuaranteeGameTest {
 					return new EdgeDensityFunction(rewrite(edge.input()), radius, edge.band());
 				}
 				if (function instanceof AnchorPlanFunction plan) {
-					return new AnchorPlanFunction(radius, plan.temperature(), plan.vegetation(), plan.continents(), plan.erosion(), plan.ridges());
+					return new AnchorPlanFunction(radius, plan.band(), plan.biomes(), plan.exclude(), plan.temperature(), plan.vegetation(), plan.continents(), plan.erosion(), plan.ridges());
 				}
 				if (function instanceof EdgeCapDensityFunction cap) {
 					return new EdgeCapDensityFunction(cap.input().rewriteChildren(this), radius, cap.seaLevel());

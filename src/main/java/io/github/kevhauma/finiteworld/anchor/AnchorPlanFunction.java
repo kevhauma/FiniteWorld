@@ -7,10 +7,20 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Interval;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Climate;
+import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
 import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.DensitySampler;
@@ -24,11 +34,15 @@ import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
  * planner never reads its own output. Compiling it with a {@code RandomState}'s context seeds those
  * children; the plan is computed on the first compile and reused for every later one with the same
  * context. It samples as 0: only its {@link Sampler#plan()} is used.
+ * <p>
+ * The checklist is the {@code biomes} parameter list (vanilla's {@code minecraft:overworld}) minus the
+ * {@code exclude} biomes ({@code #minecraft:is_ocean}); the codec resolves both from the registries at
+ * datapack load, so nothing is hardcoded.
  */
 public record AnchorPlanFunction(
-	float radius, DensityFunction temperature, DensityFunction vegetation, DensityFunction continents, DensityFunction erosion, DensityFunction ridges
+	float radius, float band, Holder<MultiNoiseBiomeSourceParameterList> biomes, HolderSet<Biome> exclude, DensityFunction temperature, DensityFunction vegetation, DensityFunction continents, DensityFunction erosion, DensityFunction ridges
 ) implements DensityFunction {
-	// Coarse grid step in blocks; ANC-2 refines near the best candidates.
+	// Coarse grid step in blocks; the planner refines near the chosen spots.
 	static final int STEP = 64;
 	// RandomState makes one CompileContext and compiles every function with it, so the context identifies the world.
 	// Weak (identity) keys drop the plan when the RandomState is collected; the plan holds no reference back.
@@ -37,6 +51,9 @@ public record AnchorPlanFunction(
 
 	public static final MapCodec<AnchorPlanFunction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			ExtraCodecs.POSITIVE_FLOAT.fieldOf("radius").forGetter(AnchorPlanFunction::radius),
+			ExtraCodecs.POSITIVE_FLOAT.fieldOf("band").forGetter(AnchorPlanFunction::band),
+			MultiNoiseBiomeSourceParameterList.CODEC.fieldOf("biomes").forGetter(AnchorPlanFunction::biomes),
+			RegistryCodecs.holderSet(Registries.BIOME).fieldOf("exclude").forGetter(AnchorPlanFunction::exclude),
 			DensityFunction.CODEC.fieldOf("temperature").forGetter(AnchorPlanFunction::temperature),
 			DensityFunction.CODEC.fieldOf("vegetation").forGetter(AnchorPlanFunction::vegetation),
 			DensityFunction.CODEC.fieldOf("continents").forGetter(AnchorPlanFunction::continents),
@@ -66,11 +83,38 @@ public record AnchorPlanFunction(
 			.map(function -> function.compileSampler(context))
 			.<AnchorPlanner.Climate>map(sampler -> (x, z) -> sampler.sampleValue(SamplerContext.EMPTY_UNCACHED, x, 0, z))
 			.toList();
-		AnchorPlan plan = AnchorPlanner.plan(climate, this.radius, STEP);
-		// The hash is stable across runs (records of ints), so restarts and servers can be compared from the log.
-		FiniteWorld.LOGGER.info("[ANC-1] Planned {} anchors for radius {}: {} grid points (step {}) in {} ms, plan hash {}",
-			plan.anchors().size(), (int) this.radius, plan.gridPoints(), STEP, (System.nanoTime() - start) / 1_000_000, plan.hashCode());
+		List<AnchorPlanner.Biome> checklist = this.checklist();
+		FiniteWorld.LOGGER.info("[ANC-2] Checklist from {} minus {}: {} biomes, {} boxes: {}", this.biomes.getRegisteredName(), this.exclude.unwrapKey().map(tag -> "#" + tag.location()).orElse("a biome list"),
+			checklist.size(), checklist.stream().mapToInt(biome -> biome.boxes().size()).sum(), checklist.stream().map(AnchorPlanner.Biome::id).toList());
+		AnchorPlan plan = AnchorPlanner.plan(climate, checklist, this.radius, this.band, STEP);
+		// The hash is stable across runs (records of ints, floats and strings), so restarts and servers can be compared from the log.
+		FiniteWorld.LOGGER.info("[ANC-2] Planned {} anchors for radius {} band {}: {} grid points (step {}) in {} ms, plan hash {}",
+			plan.anchors().size(), (int) this.radius, (int) this.band, plan.gridPoints(), STEP, (System.nanoTime() - start) / 1_000_000, plan.hashCode());
 		return plan;
+	}
+
+	/** One entry per biome in parameter-list order, with its distinct boxes (depth and offset dropped: the planner steers the 2D climate). */
+	List<AnchorPlanner.Biome> checklist() {
+		return this.biomes.value().parameters().values().stream()
+			.filter(entry -> !this.exclude.contains(entry.getSecond()))
+			.collect(Collectors.groupingBy(entry -> entry.getSecond().getRegisteredName(), LinkedHashMap::new,
+				Collectors.mapping(entry -> box(entry.getFirst()), Collectors.toList())))
+			.entrySet().stream()
+			.map(entry -> new AnchorPlanner.Biome(entry.getKey(), entry.getValue().stream().distinct().toList()))
+			.toList();
+	}
+
+	private static AnchorPlanner.Box box(Climate.ParameterPoint point) {
+		return new AnchorPlanner.Box(Stream.of(point.temperature(), point.humidity(), point.continentalness(), point.erosion(), point.weirdness())
+			.map(AnchorPlanFunction::range)
+			.toList());
+	}
+
+	// Vanilla spans the climate as -1..1, but values past it still pick the box at that edge, so a side at the limit is open.
+	private static AnchorPlanner.Range range(Climate.Parameter parameter) {
+		float min = Climate.unquantizeCoord(parameter.min());
+		float max = Climate.unquantizeCoord(parameter.max());
+		return new AnchorPlanner.Range(min <= -1 ? Float.NEGATIVE_INFINITY : min, max >= 1 ? Float.POSITIVE_INFINITY : max);
 	}
 
 	@Override
@@ -82,7 +126,7 @@ public record AnchorPlanFunction(
 		DensityFunction r = rule.rewrite(this.ridges);
 		return t == this.temperature && v == this.vegetation && c == this.continents && e == this.erosion && r == this.ridges
 			? this
-			: new AnchorPlanFunction(this.radius, t, v, c, e, r);
+			: new AnchorPlanFunction(this.radius, this.band, this.biomes, this.exclude, t, v, c, e, r);
 	}
 
 	@Override

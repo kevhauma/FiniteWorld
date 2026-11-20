@@ -15,7 +15,7 @@ and tuning · P3 later options.
 | [TEST-1](tickets/TEST-1.md) | P1 | Verification | Automated guarantee check across seeds | done |
 | [SPAWN-1](tickets/SPAWN-1.md) | P1 | Spawn | Spawn on land near the centre | done |
 | [ANC-1](tickets/ANC-1.md) | P1 | Anchors | Spike: plan anchors once per world from the seeded climate | done |
-| [ANC-2](tickets/ANC-2.md) | P1 | Anchors | Anchor planner | open |
+| [ANC-2](tickets/ANC-2.md) | P1 | Anchors | Anchor planner | done |
 | [ANC-3](tickets/ANC-3.md) | P1 | Anchors | Anchor density function: steer climate toward each anchor | open |
 | [UI-1](tickets/UI-1.md) | P1 | Radius UI | Radius field on the Create World screen | open |
 | [STR-1](tickets/STR-1.md) | P1 | Structures | Measure which required structures vanilla misses | open |
