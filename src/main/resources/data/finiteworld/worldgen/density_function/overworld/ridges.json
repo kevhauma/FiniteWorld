@@ -10,6 +10,7 @@
       "xz_scale": 0.25,
       "y_scale": 0.0
     },
+    "parameter": "ridges",
     "plan": "finiteworld:overworld/anchor_plan"
   }
 }

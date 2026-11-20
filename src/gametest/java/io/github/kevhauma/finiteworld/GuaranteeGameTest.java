@@ -1,6 +1,7 @@
 package io.github.kevhauma.finiteworld;
 
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanFunction;
+import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
 import io.github.kevhauma.finiteworld.edge.EdgeCapDensityFunction;
 import io.github.kevhauma.finiteworld.edge.EdgeDensityFunction;
 
@@ -44,8 +45,8 @@ import net.minecraft.world.level.levelgen.presets.WorldPreset;
 
 /**
  * TEST-1: builds the Finite world preset's generator for fixed seeds and radii and checks the
- * design's hard rules. Edge: no land past the radius (asserted). Biomes: checklist coverage inside
- * the radius (reported; ANC-3 turns it into an assertion). SPAWN-1: the initial spawn (vanilla's search,
+ * design's hard rules. Edge: no land past the radius (asserted). Biomes: every checklist biome inside
+ * the radius, from the biome source with the anchored climate (asserted, ANC-3). SPAWN-1: the initial spawn (vanilla's search,
  * steered by the Finite {@code spawn_target}) is on land near the origin (asserted).
  */
 public class GuaranteeGameTest {
@@ -86,7 +87,8 @@ public class GuaranteeGameTest {
 					.filter(p -> p[2] > settings.seaLevel())
 					.map(p -> "(" + p[0] + ", " + p[1] + ") floor y=" + p[2] + " C=" + random.sampleBlockValueUncached(settings.noiseRouter().continents(), p[0], 0, p[1]))
 					.toList();
-				return new Result(run.seed(), run.radius(), land, edge.size(), biomesInside(biomes, random, run.radius()));
+				AnchorPlan plan = ((AnchorPlanFunction.Sampler) random.getSampler(planNode(settings))).plan();
+				return new Result(run.seed(), run.radius(), land, edge.size(), biomesInside(biomes, random, run.radius(), plan), plan);
 			})
 			.toList();
 
@@ -94,6 +96,8 @@ public class GuaranteeGameTest {
 			"[TEST-1] seed {} radius {}: edge {} land / {} columns; biomes {}/{} missing {}",
 			result.seed(), (int) result.radius(), result.landPastRadius().size(), result.edgeColumns(),
 			checklist.stream().filter(result.found()::contains).count(), checklist.size(), names(missing(checklist, result))));
+		FiniteWorld.LOGGER.info("[ANC-3] largest |offset| per parameter (router order) over all plans: {}", IntStream.range(0, 5)
+			.mapToObj(p -> results.stream().flatMap(r -> r.plan().anchors().stream()).mapToDouble(a -> Math.abs(a.offset().get(p))).max().orElse(0)).toList());
 		RADII.forEach(radius -> FiniteWorld.LOGGER.info("[TEST-1] radius {}: missing in some seed {}", radius.intValue(),
 			names(results.stream().filter(r -> r.radius() == radius).flatMap(r -> missing(checklist, r).stream()).collect(Collectors.toSet()))));
 
@@ -101,6 +105,13 @@ public class GuaranteeGameTest {
 		helper.assertTrue(failed.isEmpty(), Component.literal("Land past the radius: " + failed.stream()
 			.map(r -> "seed " + r.seed() + " radius " + (int) r.radius() + " at " + r.landPastRadius().stream().limit(5).toList())
 			.collect(Collectors.joining("; "))));
+		List<String> uncovered = results.stream()
+			.filter(r -> !missing(checklist, r).isEmpty())
+			.map(r -> "seed " + r.seed() + " radius " + (int) r.radius() + " missing " + missing(checklist, r).stream()
+				.map(biome -> r.plan().anchors().stream().filter(a -> a.biome().equals(biome.getRegisteredName())).findFirst().map(Object::toString).orElse(biome.getRegisteredName()))
+				.toList())
+			.toList();
+		helper.assertTrue(uncovered.isEmpty(), Component.literal("Checklist biomes missing inside the radius: " + String.join("; ", uncovered)));
 		helper.succeed();
 	}
 
@@ -182,10 +193,10 @@ public class GuaranteeGameTest {
 		return LevelHeightAccessor.create(dimension.minY(), dimension.height());
 	}
 
-	/** Every biome the climate picks on a grid inside the radius, at the surface and at cave depths. */
-	private static Set<Holder<Biome>> biomesInside(MultiNoiseBiomeSource biomes, RandomState random, float radius) {
+	/** Every biome the climate picks at the anchor centres and on a grid inside the radius, at the surface and at cave depths. */
+	private static Set<Holder<Biome>> biomesInside(MultiNoiseBiomeSource biomes, RandomState random, float radius, AnchorPlan plan) {
 		Climate.Sampler climate = random.createClimateSampler(SamplerContext.EMPTY_UNCACHED);
-		return grid(BIOME_STEP, 0, radius - 1).<Holder<Biome>>mapMulti((p, found) -> {
+		return Stream.concat(plan.anchors().stream().map(a -> new int[] {a.x(), a.z()}), grid(BIOME_STEP, 0, radius - 1)).<Holder<Biome>>mapMulti((p, found) -> {
 			int x = p[0];
 			int z = p[1];
 			// All climate noises but depth are 2D (y_scale 0), so one sample serves every height.
@@ -198,6 +209,21 @@ public class GuaranteeGameTest {
 			found.accept(biomes.getNoiseBiome(Climate.target(t, h, c, e, 0.0F, w)));
 			CAVE_YS.forEach(y -> found.accept(biomes.getNoiseBiome(Climate.target(t, h, c, e, climate.depth().sampleValue(x, y, z), w))));
 		}).collect(Collectors.toSet());
+	}
+
+	/** The settings' {@code finiteworld:anchor_plan} node, so its plan is read from the node these settings compile. */
+	private static AnchorPlanFunction planNode(NoiseGeneratorSettings settings) {
+		List<AnchorPlanFunction> found = new ArrayList<>();
+		new DfRewriteRule() {
+			@Override
+			public DensityFunction rewrite(DensityFunction function) {
+				if (function instanceof AnchorPlanFunction plan) {
+					found.add(plan);
+				}
+				return function.rewriteChildren(this);
+			}
+		}.rewrite(settings.noiseRouter().temperature());
+		return found.getFirst();
 	}
 
 	/** Grid points (x, z) whose distance from the origin lies in [min, max]. */
@@ -253,6 +279,6 @@ public class GuaranteeGameTest {
 	private record Run(long seed, float radius) {
 	}
 
-	private record Result(long seed, float radius, List<String> landPastRadius, int edgeColumns, Set<Holder<Biome>> found) {
+	private record Result(long seed, float radius, List<String> landPastRadius, int edgeColumns, Set<Holder<Biome>> found, AnchorPlan plan) {
 	}
 }

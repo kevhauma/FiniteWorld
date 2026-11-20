@@ -1,5 +1,6 @@
 {
   "type": "finiteworld:anchor",
   "input": "minecraft:overworld/temperature",
+  "parameter": "temperature",
   "plan": "finiteworld:overworld/anchor_plan"
 }

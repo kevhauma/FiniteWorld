@@ -1,5 +1,6 @@
 {
   "type": "finiteworld:anchor",
   "input": "minecraft:overworld/vegetation",
+  "parameter": "vegetation",
   "plan": "finiteworld:overworld/anchor_plan"
 }

@@ -23,12 +23,12 @@ Add the `finiteworld:anchor` density function type, which adds the plan's smooth
 
 ## Acceptance criteria
 
-- [ ] Unit test for the falloff: full offset at the centre, zero at the anchor radius, smooth in between.
-- [ ] Honest `minValue`/`maxValue`.
-- [ ] TEST-1 asserts full biome coverage for all its seeds at radius 3000 and 4000.
-- [ ] Verified in game (seed 12345, radius 4000): `/locate biome` finds every checklist biome inside the radius; screenshots of 3 anchors with large offsets show no hard climate seams.
-- [ ] Default worlds are unaffected.
-- [ ] `./gradlew build` passes.
+- [x] Unit test for the falloff: full offset at the centre, zero at the anchor radius, smooth in between. (`AnchorFieldTest.falloffIsFullAtTheCentreZeroAtTheRadiusAndSmoothBetween`: 1 at d=0, 0 at and past r, flat at both ends, monotonic, per-block change within the curve's peak slope; `fullOffsetAtTheCentreAndNoneFromTheRadiusOn` and `gridMatchesTheSumOverEveryAnchor` check the bucketed `AnchorField` against a brute-force sum.)
+- [x] Honest `minValue`/`maxValue`. (`AnchorDensityFunction.range()` = input range ± `AnchorPlanner.MAX_OFFSET` (1.0). It holds for any plan: the planner caps every offset at ±1 (`AnchorPlannerTest.offsetIsCappedAtMaxOffset`), and centres at least 2 × radius apart mean at most one anchor reaches a point (`AnchorFieldTest.touchingDiscsNeverAddUpPastMaxOffset`). Largest real offset over the 40 TEST-1 worlds: 0.73, so the cap never bites.)
+- [x] TEST-1 asserts full biome coverage for all its seeds at radius 3000 and 4000. (`GuaranteeGameTest.guaranteeHoldsAcrossSeeds` samples the preset's multi-noise biome source with each world's anchored climate sampler at every anchor centre and on the 32-block grid, at the surface and 8 cave heights, and asserts all 47 checklist biomes for seeds 1–20 at both radii: passes. Before ANC-3 the same sampling missed 31 biomes in some seed at 3000 and 15 at 4000. The 32-block grid alone, without the centre samples, also finds all 47 in every world.)
+- [ ] Verified in game (seed 12345, radius 4000): `/locate biome` finds every checklist biome inside the radius; screenshots of 3 anchors with large offsets show no hard climate seams. (Half done. `/locate biome`: dedicated server, fresh world seed 12345 radius 4000 (plan hash -322952148), `locate biome` over RCON for each of the 47 biomes in the `[ANC-2] Checklist` log line: 47/47 found, farthest badlands at 3,246 blocks, all inside the radius. Open: screenshots of 3 strongly pulled anchors, which need the client window.)
+- [x] Default worlds are unaffected. (`AnchorPlanGameTest.planOncePerWorldNeverForDefault` compiles every router function of vanilla `minecraft:overworld` noise settings and asserts no plan is computed; an anchor node compiles its plan first, so none is reachable from Default. The mod only adds files under `data/finiteworld/` plus the preset tag.)
+- [x] `./gradlew build` passes. (`gradlew.bat build runGameTest`: BUILD SUCCESSFUL, unit tests pass, all 4 game tests passed.)
 
 ## Notes
 

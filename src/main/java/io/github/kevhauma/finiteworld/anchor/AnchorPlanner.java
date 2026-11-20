@@ -23,6 +23,11 @@ public final class AnchorPlanner {
 	static final int MIN_SPACING = 2 * ANCHOR_RADIUS;
 	// Aim this far inside a box's edge, so the anchored spot does not sit on a biome border.
 	static final float MARGIN = 0.05F;
+	/**
+	 * Largest offset per parameter. The anchor density function's range is computed before any plan exists, so it
+	 * widens its input's range by this; discs never overlap, so a point gets at most one anchor's offset.
+	 */
+	public static final float MAX_OFFSET = 1.0F;
 	private static final int PARAMETERS = 5;
 
 	private AnchorPlanner() {
@@ -149,7 +154,7 @@ public final class AnchorPlanner {
 				.orElseThrow();
 			float[] core = this.cores[best.nearest()];
 			List<Float> offset = IntStream.range(0, best.climate().length)
-				.mapToObj(p -> Math.clamp(best.climate()[p], core[2 * p], core[2 * p + 1]) - best.climate()[p])
+				.mapToObj(p -> Math.clamp(Math.clamp(best.climate()[p], core[2 * p], core[2 * p + 1]) - best.climate()[p], -MAX_OFFSET, MAX_OFFSET))
 				.toList();
 			return new Anchor(this.biome.id(), best.x(), best.z(), ANCHOR_RADIUS, offset);
 		}

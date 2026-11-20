@@ -12,6 +12,7 @@
         "xz_scale": 0.25,
         "y_scale": 0.0
       },
+      "parameter": "continents",
       "plan": "finiteworld:overworld/anchor_plan"
     },
     "radius": 4000.0,

@@ -74,6 +74,15 @@ class AnchorPlannerTest {
 	}
 
 	@Test
+	void offsetIsCappedAtMaxOffset() {
+		// Continentalness below -3 is out of reach (the climate spans -1..1), so the pull is capped.
+		Biome unreachable = new Biome("unreachable", List.of(new Box(List.of(ANY, ANY, new Range(-OPEN, -3.0F), ANY, ANY))));
+		Anchor anchor = AnchorPlanner.plan(CLIMATE, List.of(unreachable), RADIUS, BAND, STEP).anchors().getFirst();
+		assertEquals(-AnchorPlanner.MAX_OFFSET, (float) anchor.offset().get(2));
+		assertTrue(plan().anchors().stream().flatMap(a -> a.offset().stream()).allMatch(o -> Math.abs(o) <= AnchorPlanner.MAX_OFFSET));
+	}
+
+	@Test
 	void mergesTouchingSlicesOfABiome() {
 		Box low = new Box(List.of(ANY, ANY, slice(0, 5), ANY, ANY));
 		Box mid = new Box(List.of(ANY, ANY, slice(1, 5), ANY, ANY));
