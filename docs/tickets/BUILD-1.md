@@ -12,9 +12,9 @@ Remove the Fabric template's example code and set up JUnit 5, so the pure-Java m
 
 ## Current situation (as-is)
 
-- The template example mixins are still present: [ExampleMixin](../src/main/java/io/github/kevhauma/finiteworld/mixin/ExampleMixin.java) and [ExampleClientMixin](../src/client/java/io/github/kevhauma/finiteworld/client/mixin/ExampleClientMixin.java), listed in [finiteworld.mixins.json](../src/main/resources/finiteworld.mixins.json) and [finiteworld.client.mixins.json](../src/client/resources/finiteworld.client.mixins.json).
-- [FiniteWorld](../src/main/java/io/github/kevhauma/finiteworld/FiniteWorld.java) logs "Hello Fabric world!".
-- [build.gradle](../build.gradle) has no test dependencies and no Java toolchain, so the Gradle JVM is whatever `JAVA_HOME` points at.
+- The template example mixins are still present: [ExampleMixin](../../src/main/java/io/github/kevhauma/finiteworld/mixin/ExampleMixin.java) and [ExampleClientMixin](../../src/client/java/io/github/kevhauma/finiteworld/client/mixin/ExampleClientMixin.java), listed in [finiteworld.mixins.json](../../src/main/resources/finiteworld.mixins.json) and [finiteworld.client.mixins.json](../../src/client/resources/finiteworld.client.mixins.json).
+- [FiniteWorld](../../src/main/java/io/github/kevhauma/finiteworld/FiniteWorld.java) logs "Hello Fabric world!".
+- [build.gradle](../../build.gradle) has no test dependencies and no Java toolchain, so the Gradle JVM is whatever `JAVA_HOME` points at.
 
 ## Desired result (to-be)
 

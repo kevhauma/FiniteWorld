@@ -12,7 +12,7 @@ Write the planner in plain Java: given a climate sampler, the radius and the che
 
 ## Current situation (as-is)
 
-- Nothing exists yet. Design doc: [Land generation → Anchors, Checklist; Risks → Out-of-place anchors, Mushroom fields, Deep dark](../docs/Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
+- Nothing exists yet. Design doc: [Land generation → Anchors, Checklist; Risks → Out-of-place anchors, Mushroom fields, Deep dark](../Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
 
 ## Desired result (to-be)
 

@@ -12,7 +12,7 @@ A developer test (not an in-game tool, which is a non-goal) that builds the Fini
 
 ## Current situation (as-is)
 
-- No tests exist. Design doc: [Goals, Checklist, Risks → Open](../docs/Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
+- No tests exist. Design doc: [Goals, Checklist, Risks → Open](../Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
 
 ## Desired result (to-be)
 

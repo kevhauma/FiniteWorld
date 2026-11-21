@@ -12,7 +12,7 @@ Settle the design doc's open values with data and playtesting, and write them in
 
 ## Current situation (as-is)
 
-- Design doc: [Risks → Open](../docs/Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md) leaves the minimum anchor distance, the band width range and the exact minimum radius open.
+- Design doc: [Risks → Open](../Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md) leaves the minimum anchor distance, the band width range and the exact minimum radius open.
 
 ## Desired result (to-be)
 

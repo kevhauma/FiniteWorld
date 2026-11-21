@@ -1,19 +1,20 @@
 ---
 name: work-ticket
-description: Work a ticket end-to-end — read it, plan the implementation, build it, tick each acceptance criterion as it verifiably passes, then mark the ticket done in PLAN.md. Use whenever someone says "work on a ticket", "start ticket EDGE-1", "implement this ticket", "pick up ANC-2", or points you at a ticket file to build.
+description: Work a ticket end-to-end — read it, plan the implementation, build it, tick each acceptance criterion as it verifiably passes, then mark the ticket done in its plan file. Use whenever someone says "work on a ticket", "start ticket EDGE-1", "implement this ticket", "pick up ANC-2", or points you at a ticket file to build.
 ---
 
 # Work a ticket to done
 
 Drive one ticket from "open" to "done". The ticket is the source of truth: its **Acceptance
-criteria** are the contract, and once every criterion passes its row in the `PLAN.md` ticket
+criteria** are the contract, and once every criterion passes its row in the plan's ticket
 table is marked `done`.
 
-Tickets live in `tickets/<PREFIX>-<N>.md`; `PLAN.md` is the index (table with priority, area,
-status) plus the suggested `## Order`. The design the mod implements is in
+Tickets live in `docs/tickets/<PREFIX>-<N>.md`; `docs/PLAN.md` is the mod's index (table with
+priority, area, status) plus the suggested `## Order`. Other plan files in `docs/` (`*PLAN.md`,
+e.g. `docs/TEST-SERVER-PLAN.md`) index their own tickets the same way. The design the mod implements is in
 `docs/Finite World — Minecraft worldgen mod design.md` (the **design doc**; its decision log is
 the record of settled choices). **Discover the current layout at runtime; don't hardcode a
-ticket list.** No `PLAN.md` yet → there are no tickets; offer the `story-ticket` skill.
+ticket list.** No `docs/PLAN.md` yet → there are no tickets; offer the `story-ticket` skill.
 
 On Windows use `gradlew.bat` in place of `./gradlew`. JDK 25 must be on `JAVA_HOME`.
 
@@ -21,7 +22,7 @@ On Windows use `gradlew.bat` in place of `./gradlew`. JDK 25 must be on `JAVA_HO
 
 Work the ticket inline for a single ticket, or when the user wants to review the plan and steer.
 When the user wants **several tickets in a row**, hand each to a `general-purpose` subagent with
-"Run the work-ticket skill on <ID> (tickets/<ID>.md). The user pre-approved the plan. Leave
+"Run the work-ticket skill on <ID> (docs/tickets/<ID>.md). The user pre-approved the plan. Leave
 in-game checks open." It reports back a short summary.
 
 - **One subagent at a time. Never two in parallel**: they share one working tree and one Gradle
@@ -34,8 +35,8 @@ in-game checks open." It reports back a short summary.
 
 ## Step 1 — Locate the ticket
 
-- **If the user named a ticket** (ID like `EDGE-1` or a path), open `tickets/<ID>.md`.
-- **If no ticket was named**, read the `PLAN.md` table for rows that are not `done`, follow the
+- **If the user named a ticket** (ID like `EDGE-1` or a path), open `docs/tickets/<ID>.md`.
+- **If no ticket was named**, read the plan tables (`docs/*PLAN.md`) for rows that are not `done`, follow the
   `## Order` list and priorities, check each candidate's Notes for an unmet dependency, and ask
   via `AskUserQuestion` which one to work. Present the real open tickets you found.
 
@@ -115,13 +116,13 @@ A criterion gets ticked **only when it verifiably passes**, never on hope.
 
 ## Step 6 — Mark the ticket done (only when ALL criteria are `[x]`)
 
-In the `PLAN.md` ticket table, find the row whose link matches this ticket ID (**match on the
+In the plan file that lists this ticket, find the row whose link matches this ticket ID (**match on the
 link, not the title**) and set its `Status` to `done`. If the ticket settled or changed a design
 decision, check the design doc says so; if it changed setup, commands or requirements, update
 `README.md`.
 
 ## Step 7 — Report and stop
 
-Summarize what changed, link the ticket and `PLAN.md`, and show the verification proof (build
+Summarize what changed, link the ticket and its plan file, and show the verification proof (build
 output + any in-game evidence). **Leave the working tree for the user to review; do not commit**
 unless they ask.

@@ -12,7 +12,7 @@ Density functions never see the world seed directly, but the anchor plan depends
 
 ## Current situation (as-is)
 
-- Nothing exists yet. Design doc: [Land generation → Anchors; Technical approach → Anchor density function; Risks → Anchor search cost](../docs/Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
+- Nothing exists yet. Design doc: [Land generation → Anchors; Technical approach → Anchor density function; Risks → Anchor search cost](../Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
 
 ## Desired result (to-be)
 

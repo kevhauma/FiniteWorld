@@ -1,10 +1,12 @@
 # Plan
 
-Tickets live in [tickets/](tickets/). The design is in [docs/](docs/Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
+Tickets live in [tickets/](tickets/). The design is in [the design doc](Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
 
 **Priorities:** P0 code contradicts the design doc (land past the radius, a checklist item
 missing, normal worlds affected, crash) · P1 needed for a first playable Finite world · P2 polish
 and tuning · P3 later options.
+
+The test server (pre-generated worlds on a browser map) has its own plan: [TEST-SERVER-PLAN.md](TEST-SERVER-PLAN.md).
 
 | Ticket | Priority | Area | Title | Status |
 | --- | --- | --- | --- | --- |
