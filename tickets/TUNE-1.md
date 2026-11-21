@@ -29,3 +29,4 @@ Settle the design doc's open values with data and playtesting, and write them in
 ## Notes
 
 - Needs EDGE-2, ANC-3 and STR-2.
+- From EDGE-2: the anchor plan's `band` (500) is smaller than the edge's `band` + `outline_depth` (800). Setting it to 800 made STR-2 miss the desert pyramid on seed 44 at 3000 and seed 39 at 4000 (every desert patch below sea level for the pyramid's footprint). Pick the anchor band together with the outline depth.

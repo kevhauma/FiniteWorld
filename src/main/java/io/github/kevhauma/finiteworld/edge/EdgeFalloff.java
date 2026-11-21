@@ -2,7 +2,8 @@ package io.github.kevhauma.finiteworld.edge;
 
 /**
  * Edge math, free of Minecraft types: blends vanilla continentalness into the ocean range across
- * the fade band {@code [radius - band, radius]} and holds it there past the radius.
+ * the fade band {@code [radius - band, radius]} and holds it there past the radius. The band narrows
+ * under rugged terrain ({@link #band}) and wanders inward by an outline {@link #inset}.
  */
 public final class EdgeFalloff {
 	// Kept clear of OverworldBiomeBuilder (26.3): mushroom fields below -1.05, coast from -0.19.
@@ -35,5 +36,30 @@ public final class EdgeFalloff {
 		}
 		float ocean = ocean(continentalness);
 		return t == 1.0F ? ocean : continentalness + t * (ocean - continentalness);
+	}
+
+	/**
+	 * 0 for flat terrain, 1 for peaks: low erosion (OverworldBiomeBuilder's levels 0-2, below 0.05) times
+	 * peaks-and-valleys, with low erosion alone counting half.
+	 */
+	public static float ruggedness(float erosion, float ridges) {
+		float low = Math.clamp((0.05F - erosion) / 0.6F, 0.0F, 1.0F);
+		float peaks = Math.clamp((peaksAndValleys(ridges) + 0.2F) / 0.9F, 0.0F, 1.0F);
+		return low * (0.5F + 0.5F * peaks);
+	}
+
+	/** Vanilla's folded ridges (NoiseRouterData.peaksAndValleys): -1 in valleys, 1 on peaks. */
+	static float peaksAndValleys(float ridges) {
+		return -3.0F * (Math.abs(Math.abs(ridges) - 2.0F / 3.0F) - 1.0F / 3.0F);
+	}
+
+	/** Band width: {@code wide} on flat terrain, {@code narrow} under peaks. */
+	public static float band(float ruggedness, float wide, float narrow) {
+		return wide + ruggedness * (narrow - wide);
+	}
+
+	/** How far the band moves inward, in {@code [0, depth]}: never outward, so the radius stays all ocean. */
+	public static float inset(float outline, float depth) {
+		return depth * Math.clamp(0.5F + 0.5F * outline, 0.0F, 1.0F);
 	}
 }

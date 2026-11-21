@@ -55,4 +55,60 @@ class EdgeFalloffTest {
 		assertTrue(EdgeFalloff.ocean(-1.0F) < DEEP_OCEAN_MAX);
 		assertTrue(EdgeFalloff.ocean(1.0F) > DEEP_OCEAN_MAX);
 	}
+
+	private static final float NARROW_BAND = 200.0F;
+	private static final float OUTLINE_DEPTH = 300.0F;
+
+	@Test
+	void outlineNeverPushesLandPastTheRadius() {
+		for (float outline = -5.0F; outline <= 5.0F; outline += 0.01F) {
+			float inset = EdgeFalloff.inset(outline, OUTLINE_DEPTH);
+			assertTrue(inset >= 0.0F && inset <= OUTLINE_DEPTH, "outline=" + outline + " -> inset " + inset);
+			for (float band : new float[] {NARROW_BAND, 350.0F, BAND}) {
+				for (double d : new double[] {RADIUS, RADIUS + 1, 10_000}) {
+					for (float c = -3.0F; c <= 3.0F; c += 0.1F) {
+						float value = EdgeFalloff.apply(c, d + inset, RADIUS, band);
+						assertTrue(value > MUSHROOM_FIELDS_MAX && value < COAST_MIN, "outline=" + outline + " band=" + band + " c=" + c + " d=" + d);
+					}
+				}
+			}
+		}
+		// the outline really moves the coast: a high outline pulls the full-ocean point inward by the depth
+		assertEquals(1.0F, EdgeFalloff.weight(RADIUS - OUTLINE_DEPTH + EdgeFalloff.inset(1.0F, OUTLINE_DEPTH), RADIUS, BAND));
+		assertTrue(EdgeFalloff.weight(RADIUS - OUTLINE_DEPTH + EdgeFalloff.inset(-1.0F, OUTLINE_DEPTH), RADIUS, BAND) < 1.0F);
+	}
+
+	@Test
+	void bandWidthIsMonotonicInRuggedness() {
+		assertEquals(BAND, EdgeFalloff.band(0.0F, BAND, NARROW_BAND));
+		assertEquals(NARROW_BAND, EdgeFalloff.band(1.0F, BAND, NARROW_BAND));
+		float previous = Float.MAX_VALUE;
+		for (float r = 0.0F; r <= 1.0F; r += 0.01F) {
+			float band = EdgeFalloff.band(r, BAND, NARROW_BAND);
+			assertTrue(band <= previous, "band grew at ruggedness " + r);
+			previous = band;
+		}
+	}
+
+	@Test
+	void ruggednessRisesWithLowErosionAndPeaks() {
+		float valley = 0.0F;
+		float peak = 2.0F / 3.0F;
+		assertEquals(-1.0F, EdgeFalloff.peaksAndValleys(valley), 1e-6F);
+		assertEquals(1.0F, EdgeFalloff.peaksAndValleys(peak), 1e-6F);
+		assertEquals(1.0F, EdgeFalloff.ruggedness(-1.0F, peak), 1e-6F);
+		for (float ridges = -1.0F; ridges <= 1.0F; ridges += 0.05F) {
+			// flat (high-erosion) terrain keeps the wide band whatever the ridges
+			assertEquals(0.0F, EdgeFalloff.ruggedness(0.5F, ridges));
+			float previous = -1.0F;
+			for (float erosion = 1.0F; erosion >= -1.0F; erosion -= 0.01F) {
+				float r = EdgeFalloff.ruggedness(erosion, ridges);
+				assertTrue(r >= previous && r <= 1.0F, "not monotonic in erosion: e=" + erosion + " ridges=" + ridges);
+				previous = r;
+			}
+		}
+		for (float erosion = -1.0F; erosion <= 1.0F; erosion += 0.05F) {
+			assertTrue(EdgeFalloff.ruggedness(erosion, peak) >= EdgeFalloff.ruggedness(erosion, valley), "e=" + erosion);
+		}
+	}
 }

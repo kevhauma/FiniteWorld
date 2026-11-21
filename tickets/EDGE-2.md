@@ -17,18 +17,20 @@ Make the fade band's inner edge wander with low-frequency noise, and make the ba
 
 ## Desired result (to-be)
 
-- Outline: a seeded `NoiseHolder` (a new `data/finiteworld/worldgen/noise/edge_outline.json`, wired through `mapAll`) moves the band's inner edge **inward only**, so no land goes past the radius.
+- Outline: ~~a seeded `NoiseHolder` (a new `data/finiteworld/worldgen/noise/edge_outline.json`, wired through `mapAll`)~~ a new `data/finiteworld/worldgen/noise/edge_outline.json`, read by a `minecraft:noise` node in the edge's `outline` input, moves the band's inner edge **inward only**, so no land goes past the radius. *(2026-11-21: 26.3's density function API has no `NoiseHolder`/`mapAll`; vanilla's `minecraft:noise` already seeds a noise per world, so the edge takes the outline as an ordinary density function input. The whole band moves inward by `inset ∈ [0, outline_depth]`, so its outer edge never passes the radius either.)*
 - Width: the function takes erosion and ridges as extra inputs. Low erosion with high peaks-and-valleys gives a narrow band, flat terrain gives a wide one.
 - The math stays in `EdgeFalloff` with unit tests.
 
 ## Acceptance criteria
 
-- [ ] Unit tests: the outline offset never pushes land past the radius; band width is monotonic in ruggedness.
-- [ ] TEST-1 still passes (no land past the radius on any tested seed).
-- [ ] Verified in game on 3 seeds at radius 4000: the coast on a map is not a circle; a mountain range reaching the edge ends in a sea cliff, lowland ends in beach or bay. Screenshots of both.
-- [ ] No floating overhangs at cliff edges in those screenshots.
-- [ ] `./gradlew build` passes.
+- [x] Unit tests: the outline offset never pushes land past the radius; band width is monotonic in ruggedness. (`EdgeFalloffTest.outlineNeverPushesLandPastTheRadius`: for outline values -5..5 the inset stays in [0, outline_depth], and at and past the radius every band from narrow to wide gives ocean continentalness; a high outline really pulls the full-ocean point inward. `bandWidthIsMonotonicInRuggedness`: wide at 0, narrow at 1, never growing between. `ruggednessRisesWithLowErosionAndPeaks`: 0 on flat (high-erosion) terrain, non-decreasing as erosion falls, peaks ≥ valleys.)
+- [x] TEST-1 still passes (no land past the radius on any tested seed). (`gradlew.bat build`: all 7 game tests passed; `[TEST-1]` logs `edge 0 land` for all 20 seeds at radius 3000, 4000 and 5000, and all 47 checklist biomes are still covered.)
+- [ ] Verified in game on 3 seeds at radius 4000: the coast on a map is not a circle; a mountain range reaching the edge ends in a sea cliff, lowland ends in beach or bay. Screenshots of both. (Open: needs the client window and the user's go-ahead to run it.)
+- [ ] No floating overhangs at cliff edges in those screenshots. (Open: same in-game run.)
+- [x] `./gradlew build` passes. (`gradlew.bat build`: BUILD SUCCESSFUL, unit tests 31/31, game tests 7/7.)
 
 ## Notes
 
 - Needs EDGE-1. TUNE-1 settles the band width range.
+- Starting values in `overworld/continents.json`: `band` 500 (flat), `narrow_band` 200 (peaks), `outline_depth` 300. All new `finiteworld:edge` fields are optional, so `spawn_distance` and worlds saved before EDGE-2 keep the fixed circle.
+- The anchor plan's `band` stays 500, so the outermost anchor discs can reach up to 300 blocks into the wandered band; TEST-1's biome coverage still passes. Raising it to 800 (band + outline depth) moved desert anchors onto low ground: on seed 44 at 3000 and seed 39 at 4000 no desert spot was high enough for a pyramid, and STR-2's fallback found none. Left for TUNE-1.

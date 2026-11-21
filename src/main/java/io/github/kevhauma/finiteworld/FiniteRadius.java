@@ -124,7 +124,7 @@ public final class FiniteRadius {
 					return function;
 				}
 				return switch (function.rewriteChildren(this)) {
-					case EdgeDensityFunction e when e.radius() != radius -> new EdgeDensityFunction(e.input(), radius, e.band());
+					case EdgeDensityFunction e when e.radius() != radius -> e.withRadius(radius);
 					case EdgeCapDensityFunction c when c.radius() != radius -> new EdgeCapDensityFunction(c.input(), radius, c.seaLevel());
 					case AnchorPlanFunction p when p.radius() != radius ->
 						new AnchorPlanFunction(radius, p.band(), p.biomes(), p.exclude(), p.temperature(), p.vegetation(), p.continents(), p.erosion(), p.ridges());

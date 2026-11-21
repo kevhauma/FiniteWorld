@@ -16,6 +16,16 @@
       "plan": "finiteworld:overworld/anchor_plan"
     },
     "radius": 4000.0,
-    "band": 500.0
+    "band": 500.0,
+    "narrow_band": 200.0,
+    "outline": {
+      "type": "minecraft:noise",
+      "noise": "finiteworld:edge_outline",
+      "xz_scale": 1.0,
+      "y_scale": 0.0
+    },
+    "outline_depth": 300.0,
+    "erosion": "finiteworld:overworld/erosion",
+    "ridges": "finiteworld:overworld/ridges"
   }
 }
