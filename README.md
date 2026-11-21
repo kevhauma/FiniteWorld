@@ -62,7 +62,7 @@ generator-settings={"radius"\:3000}
 
 Set `accept-download: true` in `config/bluemap/core.conf`; the map is then at <http://localhost:8100>.
 
-`bash tools/test-server/pregen.sh <server-dir> 3000 [more radii...]` (Git Bash) creates each world `rN` and pre-generates it with Chunky out to radius + 512; finished worlds are skipped and interrupted ones resume.
+`bash tools/test-server/pregen.sh <server-dir> 3000 [more radii...]` (Git Bash) creates each world `rN` and pre-generates it with Chunky out to radius + 512; finished worlds are skipped and interrupted ones resume. `python tools/test-server/markers.py <server-dir> 3000 build/run/gameTest/logs/latest.log` then adds BlueMap markers for the radius, spawn, the biome anchors and every structure (run `./gradlew build` first for the anchors, and `bluemap reload` on the server after).
 
 ## License
 

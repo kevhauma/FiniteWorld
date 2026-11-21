@@ -41,7 +41,8 @@ For SRV-5, per world `rN`:
 
 1. `cp config/bluemap/maps/r3000.conf config/bluemap/maps/rN.conf`, then set `world: "rN"` and `name: "Radius N"` (keep `dimension: "minecraft:overworld"`). Delete any `rN_the_nether.conf` and `rN_the_end.conf` BlueMap creates when the server loads `rN`.
 2. On the running server: `bluemap reload`, then `bluemap force-update rN`. Watch it with `bluemap` until it reports `render-threads are idle`.
-3. BlueMap renders while Chunky generates unless its jar is parked (`mods/bluemap-5.29-fabric.jar.off`, as in SRV-2). Park it during generation if the timings matter.
+3. Markers: add N to `TEST_SERVER_RADII` in [AnchorPlanGameTest](../../src/gametest/java/io/github/kevhauma/finiteworld/AnchorPlanGameTest.java), run `./gradlew build` (it logs `[SRV] seed 12345 radius N: plan hash ..., anchors [...]`; the hash must match the server's `Planned 47 anchors for radius N ... plan hash`), then `python tools/test-server/markers.py <server-dir> N build/run/gameTest/logs/latest.log` and `bluemap reload`. It writes the radius and generated-edge circles, spawn, the 47 anchor discs and every structure start (one set per type; sets over 100 start hidden) into `rN.conf`'s `marker-sets`. For `r3000`: 1,588 markers in 37 sets, ~35 s.
+4. BlueMap renders while Chunky generates unless its jar is parked (`mods/bluemap-5.29-fabric.jar.off`, as in SRV-2). Park it during generation if the timings matter.
 
 ## Notes
 

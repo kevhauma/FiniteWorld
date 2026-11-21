@@ -4,6 +4,7 @@ import io.github.kevhauma.finiteworld.anchor.AnchorPlanFunction;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.Anchor;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,6 +34,7 @@ import net.minecraft.world.level.levelgen.synth.NormalNoise;
 public class AnchorPlanGameTest {
 	private static final ResourceKey<DensityFunction> PLAN = ResourceKey.create(Registries.DENSITY_FUNCTION, FiniteWorld.id("overworld/anchor_plan"));
 	private static final long SEED = 12345L;
+	private static final List<Float> TEST_SERVER_RADII = List.of(3000.0F);
 
 	@GameTest
 	public void planOncePerWorldNeverForDefault(GameTestHelper helper) {
@@ -65,6 +67,12 @@ public class AnchorPlanGameTest {
 		helper.assertTrue(AnchorPlanFunction.plansComputed() == beforeDefault, Component.literal("A Default world planned anchors"));
 
 		FiniteWorld.LOGGER.info("[ANC-2] seed {}: plan hash {}, anchors {}", SEED, plan.hashCode(), plan.anchors());
+		// The test server's worlds (docs/TEST-SERVER-PLAN.md); tools/test-server/markers.py reads these lines.
+		TEST_SERVER_RADII.forEach(radius -> {
+			NoiseGeneratorSettings settings = FiniteRadius.withRadius(finite, radius);
+			AnchorPlan atRadius = GuaranteeGameTest.planOf(RandomState.create(noises, SEED, settings), settings);
+			FiniteWorld.LOGGER.info("[SRV] seed {} radius {}: plan hash {}, anchors {}", SEED, radius.intValue(), atRadius.hashCode(), atRadius.anchors());
+		});
 		helper.succeed();
 	}
 
