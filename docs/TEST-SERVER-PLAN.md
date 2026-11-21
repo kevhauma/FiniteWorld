@@ -6,7 +6,7 @@ A dedicated server with a fully pre-generated Finite world at the minimum radius
 
 ## Shape
 
-- **Server:** Fabric 26.3, Java 25, outside version control, running the built `finiteworld` jar, Fabric API, a pre-generator (Chunky, else Chunkwarm or Chunksmith) and BlueMap.
+- **Server:** Fabric 26.3, Java 25, outside version control, running the built `finiteworld` jar, Fabric API, a pre-generator (Chunky) and BlueMap, in `D:\desktop\mc-mods\finite-test-server` ([SRV-1](tickets/SRV-1.md) has the versions).
 - **Worlds:** one folder per radius, all seed 12345, so the radius is the only variable. A server holds one overworld, so each world is created on its own (`level-name=rN`, `generator-settings={"radius":N}`) and the server switches between them by restart.
 - **Full world:** a circle at 0,0 out to radius + 512: all land, the edge band and a ring of open ocean.
 - **Map:** one BlueMap map per world folder, all in one web app on port 8100.
@@ -33,7 +33,7 @@ The order covers the range coarsely first: MAX, then the middle, then the gaps. 
 
 | Ticket | Priority | Area | Title | Status |
 | --- | --- | --- | --- | --- |
-| [SRV-1](tickets/SRV-1.md) | P2 | Test server | Standalone Fabric server with the mod, a pre-generator and BlueMap | open |
+| [SRV-1](tickets/SRV-1.md) | P2 | Test server | Standalone Fabric server with the mod, a pre-generator and BlueMap | done |
 | [SRV-2](tickets/SRV-2.md) | P2 | Test server | Script that creates and pre-generates a world; generate the minimum world | open |
 | [SRV-3](tickets/SRV-3.md) | P2 | Test server | Browser map of the generated worlds | open |
 | [SRV-4](tickets/SRV-4.md) | P2 | Test server | Visual check of each generated world on the map | open |

@@ -49,6 +49,19 @@ On Windows use `gradlew.bat` in place of `./gradlew`.
 
 Versions live in `gradle.properties`; check current ones at <https://fabricmc.net/develop>. Fabric's developer docs are at <https://docs.fabricmc.net/develop/>.
 
+## Test server
+
+A standalone server for pre-generating whole Finite worlds and viewing them in a browser, outside the repo; see the [test server plan](docs/TEST-SERVER-PLAN.md). `mods/` holds the built `finiteworld-1.0.0.jar`, Fabric API, [Chunky](https://modrinth.com/plugin/chunky) and [BlueMap](https://modrinth.com/plugin/bluemap) (versions in [SRV-1](docs/tickets/SRV-1.md)). None of them is a dependency of the mod.
+
+```properties
+level-name=r3000
+level-seed=12345
+level-type=finiteworld\:finite
+generator-settings={"radius"\:3000}
+```
+
+Set `accept-download: true` in `config/bluemap/core.conf`; the map is then at <http://localhost:8100>.
+
 ## License
 
 CC0-1.0, see [LICENSE](LICENSE).
