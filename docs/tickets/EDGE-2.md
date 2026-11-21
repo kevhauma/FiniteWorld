@@ -25,8 +25,8 @@ Make the fade band's inner edge wander with low-frequency noise, and make the ba
 
 - [x] Unit tests: the outline offset never pushes land past the radius; band width is monotonic in ruggedness. (`EdgeFalloffTest.outlineNeverPushesLandPastTheRadius`: for outline values -5..5 the inset stays in [0, outline_depth], and at and past the radius every band from narrow to wide gives ocean continentalness; a high outline really pulls the full-ocean point inward. `bandWidthIsMonotonicInRuggedness`: wide at 0, narrow at 1, never growing between. `ruggednessRisesWithLowErosionAndPeaks`: 0 on flat (high-erosion) terrain, non-decreasing as erosion falls, peaks ≥ valleys.)
 - [x] TEST-1 still passes (no land past the radius on any tested seed). (`gradlew.bat build`: all 7 game tests passed; `[TEST-1]` logs `edge 0 land` for all 20 seeds at radius 3000, 4000 and 5000, and all 47 checklist biomes are still covered.)
-- [ ] Verified in game on 3 seeds at radius 4000: the coast on a map is not a circle; a mountain range reaching the edge ends in a sea cliff, lowland ends in beach or bay. Screenshots of both. (Open: needs the client window and the user's go-ahead to run it.)
-- [ ] No floating overhangs at cliff edges in those screenshots. (Open: same in-game run.)
+- [ ] Verified in game on 3 seeds at radius 4000: the coast on a map is not a circle; a mountain range reaching the edge ends in a sea cliff, lowland ends in beach or bay. Screenshots of both. (Open: needs the client window and the user's go-ahead to run it. 2026-11-21, [SRV-4](SRV-4.md) on the test server map, seed 12345 at radius **3000**: the coast is not a circle except one ~1,700-block stretch on the west that follows it, now [EDGE-3](EDGE-3.md). Lowland ends in beaches. Almost no mountains meet the edge on that seed, so it shows no sea cliff, and the 4,000 seeds are still needed.)
+- [ ] No floating overhangs at cliff edges in those screenshots. (Open: same in-game run. SRV-4's top-down map can't show overhangs.)
 - [x] `./gradlew build` passes. (`gradlew.bat build`: BUILD SUCCESSFUL, unit tests 31/31, game tests 7/7.)
 
 ## Notes

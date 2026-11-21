@@ -36,7 +36,7 @@ The order covers the range coarsely first: MAX, then the middle, then the gaps. 
 | [SRV-1](tickets/SRV-1.md) | P2 | Test server | Standalone Fabric server with the mod, a pre-generator and BlueMap | done |
 | [SRV-2](tickets/SRV-2.md) | P2 | Test server | Script that creates and pre-generates a world; generate the minimum world | | done |
 | [SRV-3](tickets/SRV-3.md) | P2 | Test server | Browser map of the generated worlds | | done |
-| [SRV-4](tickets/SRV-4.md) | P2 | Test server | Visual check of each generated world on the map | open |
+| [SRV-4](tickets/SRV-4.md) | P2 | Test server | Visual check of each generated world on the map | done |
 | [SRV-5](tickets/SRV-5.md) | P3 | Test server | Optional larger worlds up to the maximum radius, as time and disk allow | open |
 
 ## Order
