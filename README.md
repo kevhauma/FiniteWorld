@@ -62,6 +62,8 @@ generator-settings={"radius"\:3000}
 
 Set `accept-download: true` in `config/bluemap/core.conf`; the map is then at <http://localhost:8100>.
 
+`bash tools/test-server/pregen.sh <server-dir> 3000 [more radii...]` (Git Bash) creates each world `rN` and pre-generates it with Chunky out to radius + 512; finished worlds are skipped and interrupted ones resume.
+
 ## License
 
 CC0-1.0, see [LICENSE](LICENSE).

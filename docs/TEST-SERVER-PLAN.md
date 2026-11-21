@@ -13,7 +13,7 @@ A dedicated server with a fully pre-generated Finite world at the minimum radius
 
 ## Worlds
 
-**Required:** `r3000`, radius 3,000 (MIN): 151 k chunks, ~1.2 GB at ~8 KB/chunk.
+**Required:** `r3000`, radius 3,000 (MIN): 151 k chunks, measured 1.4 GB (~9.7 KB/chunk) and ~19 min to generate (~7.5 ms/chunk) ([SRV-2](tickets/SRV-2.md#measured)).
 
 **Optional ([SRV-5](tickets/SRV-5.md)), in this order, each only if `r3000`'s measured cost says it fits:**
 
@@ -29,12 +29,12 @@ A dedicated server with a fully pre-generated Finite world at the minimum radius
 | `r14000` | 14,000 | 2.58 M | ~21 GB |
 | `r17000` | 17,000 | 3.76 M | ~30 GB |
 
-The order covers the range coarsely first: MAX, then the middle, then the gaps. All nine together are ~16.8 M chunks and ~134 GB plus map tiles. Estimates; SRV-2 measures `r3000`, which sets the real per-chunk time and size.
+The order covers the range coarsely first: MAX, then the middle, then the gaps. All nine together are ~16.8 M chunks and ~134 GB plus map tiles. Estimates at ~8 KB/chunk; SRV-2 measured `r3000` at ~9.7 KB and ~7.5 ms per chunk, so scale the disk column by 1.2 (MAX: ~50 GB, ~11 h).
 
 | Ticket | Priority | Area | Title | Status |
 | --- | --- | --- | --- | --- |
 | [SRV-1](tickets/SRV-1.md) | P2 | Test server | Standalone Fabric server with the mod, a pre-generator and BlueMap | done |
-| [SRV-2](tickets/SRV-2.md) | P2 | Test server | Script that creates and pre-generates a world; generate the minimum world | open |
+| [SRV-2](tickets/SRV-2.md) | P2 | Test server | Script that creates and pre-generates a world; generate the minimum world | | done |
 | [SRV-3](tickets/SRV-3.md) | P2 | Test server | Browser map of the generated worlds | open |
 | [SRV-4](tickets/SRV-4.md) | P2 | Test server | Visual check of each generated world on the map | open |
 | [SRV-5](tickets/SRV-5.md) | P3 | Test server | Optional larger worlds up to the maximum radius, as time and disk allow | open |
