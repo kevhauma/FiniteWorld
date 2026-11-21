@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 public final class AnchorPlanner {
 	/** Blocks around an anchor centre that its offset reaches; ANC-3 fades the offset out to this radius. */
 	public static final int ANCHOR_RADIUS = 192;
-	// Anchor discs never overlap. shortcut: fixed spacing and radius; TUNE-1 settles both in playtesting.
+	// Anchor discs never overlap. Radius and spacing settled in TUNE-1 (design doc decision 18): 47 anchors need a world radius of about 2,500.
 	static final int MIN_SPACING = 2 * ANCHOR_RADIUS;
 	// Aim this far inside a box's edge, so the anchored spot does not sit on a biome border.
 	static final float MARGIN = 0.05F;

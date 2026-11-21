@@ -20,7 +20,7 @@ and tuning · P3 later options.
 | [UI-1](tickets/UI-1.md) | P1 | Radius UI | Radius field on the Create World screen | done |
 | [STR-1](tickets/STR-1.md) | P1 | Structures | Measure which required structures vanilla misses | done |
 | [STR-2](tickets/STR-2.md) | P1 | Structures | Fallback placement for missed structures | done |
-| [TUNE-1](tickets/TUNE-1.md) | P2 | Tuning | Settle the open values: minimum radius, band width, anchor spacing | open |
+| [TUNE-1](tickets/TUNE-1.md) | P2 | Tuning | Settle the open values: minimum radius, band width, anchor spacing | done |
 
 ## Order
 

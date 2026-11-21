@@ -122,9 +122,12 @@ Decisions from the design interview, in the order they were made.
 | 10 | Radius setting | Field on the Create World screen, default 4,000 | Config file; fixed constant |
 | 11 | Verification | Reuse `/locate` and Adventuring Time | Debug report command; player checklist |
 | 12 | Radius too small | Hard minimum of about 3,000 | Auto-compress biomes; drop the guarantee |
-| 13 | Radius too large | Hard maximum of 20,000 (UI-1), to be revisited in TUNE-1 | No limit (planning time grows with radius²) |
+| 13 | Radius too large | Hard maximum of 20,000 (UI-1); kept in TUNE-1, where planning took about 120 ms at 5,000, so about 2 s at 20,000 | No limit (planning time grows with radius²) |
 | 14 | Radius on a dedicated server | `generator-settings` in server.properties (UI-1) | Always the default; a separate config file |
 | 15 | Structure fallback placement | A one-position concentric-rings placement (`finiteworld:anchored`), checked once per world (STR-2) | A new placement type of its own (`/locate` would not find it without another mixin) |
+| 16 | Exact minimum radius | 3,000 (TUNE-1). TEST-1 sweep: the 47 anchors don't fit at 2,000 (20/20 seeds) or 2,250 (19/20); 2,500 covers every biome but misses structures in 4 of 50 seeds (stronghold, trail ruins, desert pyramid), 2,750 in 2 of 50 (desert pyramid); 3,000 and 4,000 pass all seeds | 2,500 (biomes only); a larger margin such as 3,500 (shrinks the smallest worlds while the desert pyramid gap needs a fix of its own anyway) |
+| 17 | Fade band width | 500 blocks on flat terrain, 200 under peaks, inner edge wandering inward up to 300 (EDGE-2, TUNE-1); TEST-1 finds no land past the radius on any seed | One fixed width (no cliffs at mountains) |
+| 18 | Anchor size and spacing | Anchor radius 192, discs never overlap (spacing 384); the planner keeps centres inside radius − 500 − 192 | Planning inside radius − 800 (band plus outline depth): moved desert anchors onto low ground, and the pyramid fallback failed on 2 of 100 worlds |
 
 ## Risks and open questions
 
@@ -136,4 +139,5 @@ The biggest risk is anchors that look out of place; most other risks are about t
 - **Cliff look.** A narrow fade band under mountains may produce sheer walls or floating overhangs. It needs tuning on several seeds.
 - **Anchor search cost.** Searching the climate across a 4,000-block disc at world load must stay fast. Sample on a coarse grid first, then refine.
 - **Future Minecraft versions.** Reading the checklist from vanilla's registries at runtime picks up new biomes automatically, but each new biome raises the space the minimum radius has to hold.
-- **Open:** minimum distance between anchors, the width range of the fade band, and the exact minimum radius. Settle these in playtesting.
+- **Desert pyramid.** It needs its whole footprint at or above sea level. In about 2 of 50 worlds at small radii (and after an anchor-band change at 4,000), no desert inside the radius is high enough, and the STR-2 fallback finds no spot. The desert anchor should prefer a spot inland enough to stand above sea level.
+- **Open:** the band, outline and anchor values (decisions 16–18) come from TEST-1 data; they still need a visual check on real seeds (EDGE-2's in-game criteria).
