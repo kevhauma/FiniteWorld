@@ -12,7 +12,7 @@ table is marked `done`.
 Tickets live in `docs/tickets/<PREFIX>-<N>.md`; `docs/PLAN.md` is the mod's index (table with
 priority, area, status) plus the suggested `## Order`. Other plan files in `docs/` (`*PLAN.md`,
 e.g. `docs/TEST-SERVER-PLAN.md`) index their own tickets the same way. The design the mod implements is in
-`docs/Finite World — Minecraft worldgen mod design.md` (the **design doc**; its decision log is
+`docs/design.md` (the **design doc**; its decision log is
 the record of settled choices). **Discover the current layout at runtime; don't hardcode a
 ticket list.** No `docs/PLAN.md` yet → there are no tickets; offer the `story-ticket` skill.
 

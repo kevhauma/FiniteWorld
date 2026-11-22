@@ -13,7 +13,7 @@ Make the fade band's inner edge wander with low-frequency noise, and make the ba
 ## Current situation (as-is)
 
 - After EDGE-1, `EdgeDensityFunction` uses a fixed band on a perfect circle.
-- Design doc: [The edge → Adaptive width, Irregular outline; Risks → Cliff look](../Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
+- Design doc: [The edge → Adaptive width, Irregular outline; Risks → Cliff look](../design.md).
 
 ## Desired result (to-be)
 

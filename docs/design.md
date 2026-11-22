@@ -89,7 +89,16 @@ Past the edge band, generation is vanilla ocean with no land above sea level. Va
 
 The mod adds three inputs (the radius, the edge band, the anchor planner) and leaves terrain, biome selection and structure generation to vanilla code.
 
-&#91;embedded content: generation pipeline · 3 mod parts feeding vanilla\]
+```mermaid
+flowchart LR
+    radius[Radius] --> edge[Edge density function]
+    planner[Anchor planner] --> anchor[Anchor density function]
+    edge --> router[Finite noise settings]
+    anchor --> router
+    router --> terrain[Vanilla terrain]
+    router --> biomes[Vanilla biome selection]
+    biomes --> structures[Vanilla structures]
+```
 
 Because terrain and biomes both read the same climate noises, steering those noises keeps the land and its biomes consistent without a separate biome map.
 

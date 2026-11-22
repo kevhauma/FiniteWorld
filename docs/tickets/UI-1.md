@@ -13,7 +13,7 @@ Add a customise screen for the Finite preset, the same way vanilla does for Supe
 ## Current situation (as-is)
 
 - The radius is hardcoded as 4000 in the noise settings JSON (EDGE-1). [FiniteWorldClient](../../src/client/java/io/github/kevhauma/finiteworld/client/FiniteWorldClient.java) is empty.
-- Design doc: [Player experience; Technical approach → Radius UI](../Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md), decisions #10 and #12.
+- Design doc: [Player experience; Technical approach → Radius UI](../design.md), decisions #10 and #12.
 
 ## Desired result (to-be)
 

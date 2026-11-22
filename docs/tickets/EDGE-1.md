@@ -13,7 +13,7 @@ Add the `finiteworld:edge` density function type. It lowers continentalness insi
 ## Current situation (as-is)
 
 - No density function types are registered. [FiniteWorld](../../src/main/java/io/github/kevhauma/finiteworld/FiniteWorld.java) is empty.
-- Design doc: [The edge, Beyond the radius, Technical approach → Edge density function](../Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
+- Design doc: [The edge, Beyond the radius, Technical approach → Edge density function](../design.md).
 
 ## Desired result (to-be)
 

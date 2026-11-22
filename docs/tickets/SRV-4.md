@@ -12,7 +12,7 @@ Use SRV-3's map to check the coastline, the edge, spawn and land shape of `r3000
 
 ## Current situation (as-is)
 
-- [EDGE-2](EDGE-2.md) still has open in-game screenshots; the design doc's [Risks and open questions](../Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md) lists only the visual check as open (TUNE-1).
+- [EDGE-2](EDGE-2.md) still has open in-game screenshots; the design doc's [Risks and open questions](../design.md) lists only the visual check as open (TUNE-1).
 - [TEST-1](TEST-1.md) asserts the hard rules by sampling; nothing looks at a whole world.
 
 ## Desired result (to-be)

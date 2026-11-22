@@ -3,7 +3,7 @@
 Source: [project review 2026-11-22](../../project-review-2026-11-22.md). One ticket per finding. Each ticket's
 number matches its finding's number in the review.
 
-Goal: the skeleton is clean and builds the same way every time, and the design doc has no known gaps before any
+Goal: the skeleton is clean and builds the same way every time, and the [design doc](../../design.md) has no known gaps before any
 worldgen code is written.
 
 | # | Ticket | Area | Severity | Status |
@@ -19,7 +19,7 @@ worldgen code is written.
 | 09 | [Use a Java toolchain](09-java-toolchain.md) | Build | Low | Done |
 | 10 | [Cache Gradle in CI and stop double runs](10-ci-cache-and-triggers.md) | CI | Low | Done |
 | 11 | [Write a real README](11-write-readme.md) | Docs | Medium | Open |
-| 12 | [Fix the design doc's embed and file name](12-design-doc-cleanup.md) | Docs | Low | Open |
+| 12 | [Fix the design doc's embed and file name](12-design-doc-cleanup.md) | Docs | Low | Done |
 | 13 | [Remove template leftovers](13-remove-template-leftovers.md) | Readability | Low | Done |
 | 14 | [Set a lower bound on the fabric-api dependency](14-bound-fabric-api-dependency.md) | Build | Low | Done |
 

@@ -1,7 +1,7 @@
 # Project review — 2026-11-22
 
 Scope: the whole repository at `6bf58be` (branch `kevhauma/abalone`). It holds the Fabric 26.3 template skeleton,
-the design doc, and the vendored agent skills. No gameplay or worldgen code exists yet, so most findings are about
+the [design doc](design.md), and the vendored agent skills. No gameplay or worldgen code exists yet, so most findings are about
 the build, template leftovers, and gaps in the design doc that will bite once implementation starts.
 
 Checked:

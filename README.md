@@ -9,7 +9,7 @@ The land is vanilla terrain at vanilla scale, different for every seed. The mod 
 
 **Why?** An endless world never runs out, so nothing on it is scarce and nowhere is far. A finite island gives a world a shape: a coastline you can sail around, a map you can fill in completely, and neighbours on a server who share the same land instead of spreading out forever. The guarantee keeps that from costing anything: you won't need to leave the island to find a jungle, a mesa or an ancient city.
 
-> **Status:** early development, but playable. The edge, spawn on land, the radius setting and the structure guarantee work. Steering climate toward missing biomes ([ANC-3](docs/tickets/ANC-3.md)) and a more natural coastline ([EDGE-2](docs/tickets/EDGE-2.md)) are in progress. See the [plan](docs/PLAN.md) and the full [design](docs/Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
+> **Status:** early development, but playable. The edge, spawn on land, the radius setting and the structure guarantee work. Steering climate toward missing biomes ([ANC-3](docs/tickets/ANC-3.md)) and a more natural coastline ([EDGE-2](docs/tickets/EDGE-2.md)) are in progress. See the [plan](docs/PLAN.md) and the full [design](docs/design.md).
 
 ## Showcase
 

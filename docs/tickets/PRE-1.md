@@ -13,7 +13,7 @@ Add the `finiteworld:finite` world preset and the mod's own copy of the Overworl
 ## Current situation (as-is)
 
 - No worldgen data exists under `src/main/resources/data/`.
-- Design doc: [Technical approach → World preset](../Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md), Player experience.
+- Design doc: [Technical approach → World preset](../design.md), Player experience.
 
 ## Desired result (to-be)
 

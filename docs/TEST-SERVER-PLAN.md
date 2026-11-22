@@ -1,6 +1,6 @@
 # Test server plan
 
-A dedicated server with a fully pre-generated Finite world at the minimum radius, viewable on a browser map. Larger worlds, up to the maximum radius, are added later only if time and disk allow. It is a developer tool outside the mod: the mod gains no code and no dependency. Tickets live in [tickets/](tickets/); the mod's own plan is [PLAN.md](PLAN.md), the design is in [the design doc](Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
+A dedicated server with a fully pre-generated Finite world at the minimum radius, viewable on a browser map. Larger worlds, up to the maximum radius, are added later only if time and disk allow. It is a developer tool outside the mod: the mod gains no code and no dependency. Tickets live in [tickets/](tickets/); the mod's own plan is [PLAN.md](PLAN.md), the design is in [the design doc](design.md).
 
 **Priorities:** as in [PLAN.md](PLAN.md). The minimum world is P2: it feeds the visual check, it does not block a playable world. Larger worlds are P3.
 

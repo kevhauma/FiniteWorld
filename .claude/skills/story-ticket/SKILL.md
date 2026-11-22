@@ -16,9 +16,9 @@ When the user asks to capture a **bug**, **refactor**, or **feature**, produce t
 **Never assume which areas or prefixes exist; they change.** Read the plan files and list `docs/tickets/`
 at runtime and mirror what you find, but always create both pieces.
 
-The design is in `docs/Finite World — Minecraft worldgen mod design.md` (the **design doc**).
+The design is in `docs/design.md` (the **design doc**).
 Link it from tickets as
-`../Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md`.
+`../design.md`.
 
 ## Step 0 — Bootstrap (only if `docs/PLAN.md` or `docs/tickets/` is missing)
 
@@ -27,7 +27,7 @@ Create `docs/tickets/` and a `docs/PLAN.md` with this skeleton, then continue:
 ```markdown
 # Plan
 
-Tickets live in [tickets/](tickets/). The design is in [the design doc](Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
+Tickets live in [tickets/](tickets/). The design is in [the design doc](design.md).
 
 **Priorities:** P0 code contradicts the design doc (land past the radius, a checklist item
 missing, normal worlds affected, crash) · P1 needed for a first playable Finite world · P2 polish

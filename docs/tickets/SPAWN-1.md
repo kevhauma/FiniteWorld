@@ -13,7 +13,7 @@ Vanilla already searches for spawn near the origin using the noise settings' `sp
 ## Current situation (as-is)
 
 - `spawn_target` is copied unchanged from vanilla in PRE-1.
-- Design doc: [Technical approach → Spawn; Player experience](../Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
+- Design doc: [Technical approach → Spawn; Player experience](../design.md).
 
 ## Desired result (to-be)
 

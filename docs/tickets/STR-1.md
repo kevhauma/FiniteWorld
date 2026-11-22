@@ -12,7 +12,7 @@ Extend TEST-1 to check the structure checklist the way `/locate` does: enumerate
 
 ## Current situation (as-is)
 
-- Structure sets are vanilla and unchanged. Design doc: [Checklist → Structures; Technical approach → Structures](../Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
+- Structure sets are vanilla and unchanged. Design doc: [Checklist → Structures; Technical approach → Structures](../design.md).
 
 ## Desired result (to-be)
 

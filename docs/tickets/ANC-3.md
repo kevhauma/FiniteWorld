@@ -12,7 +12,7 @@ Add the `finiteworld:anchor` density function type, which adds the plan's smooth
 
 ## Current situation (as-is)
 
-- ANC-1 added `finiteworld:anchor` (fields `input`, `plan`) as a pass-through on all five climate nodes; each references the shared `finiteworld:overworld/anchor_plan`, whose sampler (`AnchorPlanFunction.Sampler#plan()`) gives the world's plan at compile time. ANC-3 adds `parameter` and the offsets. Design doc: [Technical approach → Anchor density function, Biome source](../Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
+- ANC-1 added `finiteworld:anchor` (fields `input`, `plan`) as a pass-through on all five climate nodes; each references the shared `finiteworld:overworld/anchor_plan`, whose sampler (`AnchorPlanFunction.Sampler#plan()`) gives the world's plan at compile time. ANC-3 adds `parameter` and the offsets. Design doc: [Technical approach → Anchor density function, Biome source](../design.md).
 
 ## Desired result (to-be)
 

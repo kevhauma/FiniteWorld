@@ -12,7 +12,7 @@ For structures STR-1 shows can miss, add an extra fixed-position placement taken
 
 ## Current situation (as-is)
 
-- Vanilla structure sets only. Design doc: [Checklist → Structures; Technical approach → Structures](../Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
+- Vanilla structure sets only. Design doc: [Checklist → Structures; Technical approach → Structures](../design.md).
 
 ## Desired result (to-be)
 

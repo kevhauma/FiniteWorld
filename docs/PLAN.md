@@ -1,6 +1,6 @@
 # Plan
 
-Tickets live in [tickets/](tickets/). The design is in [the design doc](Finite%20World%20%E2%80%94%20Minecraft%20worldgen%20mod%20design.md).
+Tickets live in [tickets/](tickets/). The design is in [the design doc](design.md).
 
 **Priorities:** P0 code contradicts the design doc (land past the radius, a checklist item
 missing, normal worlds affected, crash) · P1 needed for a first playable Finite world · P2 polish
