@@ -15,7 +15,7 @@ worldgen code is written.
 | 05 | [Fix the stale router field in the fabric-worldgen-code skill](05-fix-worldgen-skill-router-field.md) | Skill | Medium | Open |
 | 06 | [Estimate the cost of conditional structure placement, or simplify it](06-structure-placement-cost.md) | Design | Medium | Open |
 | 07 | [Delete the template example mixins](07-delete-example-mixins.md) | Code | Medium | Done |
-| 08 | [Pin Loom to a release version](08-pin-loom-version.md) | Build | Medium | Open |
+| 08 | [Pin Loom to a release version](08-pin-loom-version.md) | Build | Medium | Done |
 | 09 | [Use a Java toolchain](09-java-toolchain.md) | Build | Low | Open |
 | 10 | [Cache Gradle in CI and stop double runs](10-ci-cache-and-triggers.md) | CI | Low | Open |
 | 11 | [Write a real README](11-write-readme.md) | Docs | Medium | Open |
