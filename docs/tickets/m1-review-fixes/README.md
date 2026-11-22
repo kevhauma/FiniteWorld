@@ -20,7 +20,7 @@ worldgen code is written.
 | 10 | [Cache Gradle in CI and stop double runs](10-ci-cache-and-triggers.md) | CI | Low | Open |
 | 11 | [Write a real README](11-write-readme.md) | Docs | Medium | Open |
 | 12 | [Fix the design doc's embed and file name](12-design-doc-cleanup.md) | Docs | Low | Open |
-| 13 | [Remove template leftovers](13-remove-template-leftovers.md) | Readability | Low | Open |
+| 13 | [Remove template leftovers](13-remove-template-leftovers.md) | Readability | Low | Done |
 | 14 | [Set a lower bound on the fabric-api dependency](14-bound-fabric-api-dependency.md) | Build | Low | Open |
 
 Suggested order:
