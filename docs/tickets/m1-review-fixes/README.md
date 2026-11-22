@@ -18,7 +18,7 @@ worldgen code is written.
 | 08 | [Pin Loom to a release version](08-pin-loom-version.md) | Build | Medium | Done |
 | 09 | [Use a Java toolchain](09-java-toolchain.md) | Build | Low | Done |
 | 10 | [Cache Gradle in CI and stop double runs](10-ci-cache-and-triggers.md) | CI | Low | Done |
-| 11 | [Write a real README](11-write-readme.md) | Docs | Medium | Open |
+| 11 | [Write a real README](11-write-readme.md) | Docs | Medium | Done |
 | 12 | [Fix the design doc's embed and file name](12-design-doc-cleanup.md) | Docs | Low | Done |
 | 13 | [Remove template leftovers](13-remove-template-leftovers.md) | Readability | Low | Done |
 | 14 | [Set a lower bound on the fabric-api dependency](14-bound-fabric-api-dependency.md) | Build | Low | Done |
