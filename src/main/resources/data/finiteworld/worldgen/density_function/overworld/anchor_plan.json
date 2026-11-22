@@ -4,7 +4,7 @@
   "band": 500.0,
   "biomes": "minecraft:overworld",
   "exclude": "#minecraft:is_ocean",
-  "temperature": "minecraft:overworld/temperature",
+  "temperature": "finiteworld:overworld/temperature_noise",
   "vegetation": "minecraft:overworld/vegetation",
   "continents": "minecraft:overworld/continents",
   "erosion": "minecraft:overworld/erosion",

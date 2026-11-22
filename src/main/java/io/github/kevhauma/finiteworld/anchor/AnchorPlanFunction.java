@@ -112,14 +112,18 @@ public record AnchorPlanFunction(
 		return plan;
 	}
 
-	/** One entry per biome in parameter-list order, with its distinct boxes (depth and offset dropped: the planner steers the 2D climate). */
+	// Vanilla's coast ends here (OverworldBiomeBuilder's near-inland start). Coast terrain sits at sea level, so an anchor
+	// steered into a coast box can leave a biome with no ground above the sea (a desert with no room for its pyramid).
+	private static final float INLAND = -0.11F;
+
+	/** One entry per biome in parameter-list order, with its distinct boxes cut to inland where it has any (depth and offset dropped: the planner steers the 2D climate). */
 	List<AnchorPlanner.Biome> checklist() {
 		return this.biomes.value().parameters().values().stream()
 			.filter(entry -> !this.exclude.contains(entry.getSecond()))
 			.collect(Collectors.groupingBy(entry -> entry.getSecond().getRegisteredName(), LinkedHashMap::new,
 				Collectors.mapping(entry -> box(entry.getFirst()), Collectors.toList())))
 			.entrySet().stream()
-			.map(entry -> new AnchorPlanner.Biome(entry.getKey(), entry.getValue().stream().distinct().toList()))
+			.map(entry -> new AnchorPlanner.Biome(entry.getKey(), AnchorPlanner.inland(entry.getValue().stream().distinct().toList(), INLAND)))
 			.toList();
 	}
 

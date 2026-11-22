@@ -29,6 +29,7 @@ public final class AnchorPlanner {
 	 */
 	public static final float MAX_OFFSET = 1.0F;
 	private static final int PARAMETERS = 5;
+	private static final int CONTINENTS = 2;
 
 	private AnchorPlanner() {
 	}
@@ -166,6 +167,22 @@ public final class AnchorPlanner {
 	}
 
 	private record Spot(int x, int z, float[] climate, int nearest, float distance) {
+	}
+
+	/**
+	 * The boxes cut to continentalness at or above {@code from}, dropping those wholly below it; all of them unchanged
+	 * if none reaches it (a biome that only exists below, such as a beach).
+	 */
+	static List<Box> inland(List<Box> boxes, float from) {
+		List<Box> inland = boxes.stream()
+			.filter(box -> box.ranges().get(CONTINENTS).max() > from)
+			.map(box -> {
+				List<Range> ranges = new ArrayList<>(box.ranges());
+				ranges.set(CONTINENTS, new Range(Math.max(ranges.get(CONTINENTS).min(), from), ranges.get(CONTINENTS).max()));
+				return new Box(List.copyOf(ranges));
+			})
+			.toList();
+		return inland.isEmpty() ? boxes : inland;
 	}
 
 	/**

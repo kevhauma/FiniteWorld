@@ -8,10 +8,13 @@ import io.github.kevhauma.finiteworld.structure.StructureStarts;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
@@ -31,6 +34,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSource;
 import net.minecraft.world.level.dimension.DimensionType;
@@ -62,6 +66,9 @@ public class GuaranteeGameTest {
 	private static final int EDGE_DEPTH = 1024;
 	// 32 blocks or finer, so a small biome is not stepped over.
 	private static final int BIOME_STEP = 32;
+	// Vanilla's coldest and hottest temperature bands (OverworldBiomeBuilder): snow biomes below, desert, badlands and savanna above.
+	private static final float FROZEN_BELOW = -0.45F;
+	private static final float HOT_ABOVE = 0.55F;
 	private static final List<Integer> CAVE_YS = IntStream.iterate(-56, y -> y <= 56, y -> y + 16).boxed().toList();
 	private static final float SPAWN_RADIUS = 3000.0F;
 	private static final int SPAWN_MAX_DISTANCE = 500;
@@ -101,7 +108,7 @@ public class GuaranteeGameTest {
 					.map(p -> "(" + p[0] + ", " + p[1] + ") floor y=" + p[2] + " C=" + random.sampleBlockValueUncached(settings.noiseRouter().continents(), p[0], 0, p[1]))
 					.toList();
 				AnchorPlan plan = planOf(random, settings);
-				return new Result(run.seed(), run.radius(), land, edge.size(), biomesInside(biomes, random, run.radius(), plan), plan);
+				return new Result(run.seed(), run.radius(), land, edge.size(), biomesInside(biomes, random, run.radius(), plan), plan, landShares(biomes, random, run.radius()));
 			})
 			.toList();
 
@@ -111,6 +118,14 @@ public class GuaranteeGameTest {
 			checklist.stream().filter(result.found()::contains).count(), checklist.size(), names(missing(checklist, result))));
 		FiniteWorld.LOGGER.info("[ANC-3] largest |offset| per parameter (router order) over all plans: {}", IntStream.range(0, 5)
 			.mapToObj(p -> results.stream().flatMap(r -> r.plan().anchors().stream()).mapToDouble(a -> Math.abs(a.offset().get(p))).max().orElse(0)).toList());
+		results.forEach(r -> FiniteWorld.LOGGER.info("[CLIMATE] seed {} radius {}: land frozen {} hot {} desert {}",
+			r.seed(), (int) r.radius(), percent(r.shares().frozen()), percent(r.shares().hot()), percent(r.shares().desert())));
+		RADII.forEach(radius -> {
+			List<Shares> shares = results.stream().filter(r -> r.radius() == radius).map(Result::shares).toList();
+			FiniteWorld.LOGGER.info("[CLIMATE] radius {} over {} seeds: land frozen {}, hot {}, desert {}; frozen over a third of the land in {} seeds, desert under 2% in {}",
+				radius.intValue(), shares.size(), spread(shares, Shares::frozen), spread(shares, Shares::hot), spread(shares, Shares::desert),
+				shares.stream().filter(s -> s.frozen() > 1.0 / 3).count(), shares.stream().filter(s -> s.desert() < 0.02).count());
+		});
 		RADII.forEach(radius -> FiniteWorld.LOGGER.info("[TEST-1] radius {}: missing in some seed {}", radius.intValue(),
 			names(results.stream().filter(r -> r.radius() == radius).flatMap(r -> missing(checklist, r).stream()).collect(Collectors.toSet()))));
 
@@ -322,6 +337,34 @@ public class GuaranteeGameTest {
 		}).collect(Collectors.toSet());
 	}
 
+	/** Shares of the land columns (surface biome not an ocean) on the biome grid inside the radius, from the anchored climate. */
+	private static Shares landShares(MultiNoiseBiomeSource biomes, RandomState random, float radius) {
+		Climate.Sampler climate = random.createClimateSampler(SamplerContext.EMPTY_UNCACHED);
+		List<Column> land = grid(BIOME_STEP, 0, radius - 1)
+			.map(p -> {
+				float t = climate.temperature().sampleValue(p[0], 0, p[1]);
+				return new Column(t, biomes.getNoiseBiome(Climate.target(t, climate.humidity().sampleValue(p[0], 0, p[1]), climate.continentalness().sampleValue(p[0], 0, p[1]),
+					climate.erosion().sampleValue(p[0], 0, p[1]), 0.0F, climate.weirdness().sampleValue(p[0], 0, p[1]))));
+			})
+			.filter(c -> !c.biome().is(BiomeTags.IS_OCEAN))
+			.toList();
+		return new Shares(share(land, c -> c.temperature() < FROZEN_BELOW), share(land, c -> c.temperature() > HOT_ABOVE), share(land, c -> c.biome().is(Biomes.DESERT)));
+	}
+
+	private static double share(List<Column> land, Predicate<Column> test) {
+		return land.isEmpty() ? 0 : (double) land.stream().filter(test).count() / land.size();
+	}
+
+	private static String percent(double share) {
+		return Math.round(share * 100) + "%";
+	}
+
+	/** Mean and range over seeds, e.g. "31% (4%..78%)". */
+	private static String spread(List<Shares> shares, ToDoubleFunction<Shares> value) {
+		DoubleSummaryStatistics stats = shares.stream().mapToDouble(value).summaryStatistics();
+		return percent(stats.getAverage()) + " (" + percent(stats.getMin()) + ".." + percent(stats.getMax()) + ")";
+	}
+
 	/** The plan this world (RandomState) uses, read through the settings' own plan node. */
 	static AnchorPlan planOf(RandomState random, NoiseGeneratorSettings settings) {
 		return AnchorPlanFunction.planOf(random, settings).orElseThrow();
@@ -352,6 +395,12 @@ public class GuaranteeGameTest {
 	private record StructureResult(long seed, float radius, Map<Holder<Structure>, ChunkPos> vanilla, Map<Holder<Structure>, ChunkPos> fallback) {
 	}
 
-	private record Result(long seed, float radius, List<String> landPastRadius, int edgeColumns, Set<Holder<Biome>> found, AnchorPlan plan) {
+	private record Result(long seed, float radius, List<String> landPastRadius, int edgeColumns, Set<Holder<Biome>> found, AnchorPlan plan, Shares shares) {
+	}
+
+	private record Column(float temperature, Holder<Biome> biome) {
+	}
+
+	private record Shares(double frozen, double hot, double desert) {
 	}
 }

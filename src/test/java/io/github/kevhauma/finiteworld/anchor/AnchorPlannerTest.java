@@ -95,6 +95,15 @@ class AnchorPlannerTest {
 	}
 
 	@Test
+	void inlandCutsCoastAwayUnlessNothingElseIsLeft() {
+		Box coast = new Box(List.of(ANY, ANY, new Range(-0.19F, -0.11F), ANY, ANY));
+		Box spanning = new Box(List.of(ANY, ANY, new Range(-0.19F, 0.3F), ANY, ANY));
+		Box far = new Box(List.of(ANY, ANY, new Range(0.3F, OPEN), ANY, ANY));
+		assertEquals(List.of(new Box(List.of(ANY, ANY, new Range(-0.11F, 0.3F), ANY, ANY)), far), AnchorPlanner.inland(List.of(coast, spanning, far), -0.11F));
+		assertEquals(List.of(coast), AnchorPlanner.inland(List.of(coast), -0.11F));
+	}
+
+	@Test
 	void plansWithinTheAnc1BudgetAtRadius4000() {
 		// ANC-1 planned in 46-73 ms per world; the planner's own work (this sampler is near free) stays in that range. Best of 3 runs, so a busy machine does not fail it.
 		long best = LongStream.range(0, 3).map(run -> {
