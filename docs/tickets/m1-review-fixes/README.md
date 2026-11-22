@@ -8,7 +8,7 @@ worldgen code is written.
 
 | # | Ticket | Area | Severity | Status |
 | --- | --- | --- | --- | --- |
-| 01 | [Edge and anchors must reach terrain, not just the router](01-edge-must-reach-terrain.md) | Design | High | Open |
+| 01 | [Edge and anchors must reach terrain, not just the router](01-edge-must-reach-terrain.md) | Design | High | Done |
 | 02 | [Validate the radius in the codec](02-validate-radius-in-codec.md) | Design | High | Open |
 | 03 | [Decide the radius for dedicated servers](03-dedicated-server-radius.md) | Design | Medium | Open |
 | 04 | [Define how the anchor planner samples unanchored climate](04-anchor-planner-climate-cycle.md) | Design | Medium | Open |
