@@ -39,12 +39,21 @@ Keep vanilla doing the work; add the smallest new type and wire it in with data.
    `codec()`, and register the `MapCodec` in
    `BuiltInRegistries.DENSITY_FUNCTION_TYPE` under `<modid>:<name>` in the
    mod initializer. JSON then uses `{"type": "<modid>:<name>", ...}`.
-2. **Noise settings.** Copy vanilla `overworld.json` to
-   `data/<modid>/worldgen/noise_settings/<name>.json` and swap the
-   `noise_router` entries (`continents`, `erosion`, `temperature`, ... and
-   `final_density` / `initial_density_without_jaggedness`, which read them)
-   to wrap vanilla inputs with your type. The biome source and terrain read the
-   same router, so steering climate there changes biomes and terrain together.
+2. **Noise settings and density graph.** Terrain does not read the
+   `noise_router` climate entries. Vanilla's terrain functions (`offset`,
+   `factor`, `jaggedness`, and through them `depth`, `sloped_cheese`,
+   `final_density`) read `minecraft:overworld/continents`, `erosion` and
+   `ridges` **by id**, so swapping router entries alone changes biomes and
+   leaves terrain alone. Copy the climate-dependent functions from
+   `data/minecraft/worldgen/density_function/overworld/` under
+   `<modid>:overworld/`, wrap the inputs with your type, and rename the
+   references in the copies and in a copy of `noise_settings/overworld.json`
+   (router, `aquifers`, `debug_functions`). Overriding the vanilla ids instead
+   changes every normal world too. Take the router's fields from the vanilla
+   file; in 26.3 they are `chunk_surface_level`, `continents`, `depth`,
+   `erosion`, `final_density`, `ridges`, `temperature` and `vegetation`.
+   Finite World's copy list is in `docs/design.md` (*Copied density function
+   graph*).
 3. **World preset.** `data/<modid>/worldgen/world_preset/<name>.json` pointing
    the overworld dimension at the new noise settings. Add the preset id to
    `data/minecraft/tags/worldgen/world_preset/normal.json` (`"replace": false`)
@@ -109,7 +118,7 @@ Keep vanilla doing the work; add the smallest new type and wire it in with data.
 |---|---|
 | Fabric guides, porting notes, class tweakers | <https://docs.fabricmc.net/develop/> |
 | Versions, template mod generator | <https://fabricmc.net/develop> |
-| Fabric API javadoc (per version, e.g. `fabric-api-0.166.3+26.4`) | `https://maven.fabricmc.net/docs/fabric-api-<fabric_api_version>/` |
+| Fabric API javadoc (per version, e.g. `fabric-api-0.166.2+26.3`) | `https://maven.fabricmc.net/docs/fabric-api-<fabric_api_version>/` |
 | Vanilla source browser (official names) | <https://mcsrc.dev> |
 | Density functions, noise router, presets, biome climate | <https://minecraft.wiki/w/Density_function>, <https://minecraft.wiki/w/Noise_router>, <https://minecraft.wiki/w/World_preset>, <https://minecraft.wiki/w/Biome> |
 | Worldgen JSON generators and visualisers | <https://misode.github.io> |
