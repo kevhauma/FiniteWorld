@@ -34,7 +34,7 @@ import net.minecraft.world.level.levelgen.synth.NormalNoise;
 public class AnchorPlanGameTest {
 	private static final ResourceKey<DensityFunction> PLAN = ResourceKey.create(Registries.DENSITY_FUNCTION, FiniteWorld.id("overworld/anchor_plan"));
 	private static final long SEED = 12345L;
-	private static final List<Float> TEST_SERVER_RADII = List.of(3000.0F);
+	private static final List<Float> TEST_SERVER_RADII = List.of(3000.0F, 5000.0F);
 
 	@GameTest
 	public void planOncePerWorldNeverForDefault(GameTestHelper helper) {
