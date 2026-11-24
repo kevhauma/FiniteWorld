@@ -83,14 +83,14 @@ Versions live in `gradle.properties`; check current ones at <https://fabricmc.ne
 
 ### Releasing
 
-Set `version` in `gradle.properties`, commit, then push a matching tag:
+Set `version` in `gradle.properties`, add a `## <version>` section to [CHANGELOG.md](CHANGELOG.md), commit, then push a matching tag:
 
 ```sh
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-The `release` workflow (`.github/workflows/release.yml`) builds the jar, runs the tests and publishes it as a pre-release on [GitHub Releases](https://github.com/kevhauma/FiniteWorld/releases), with notes generated from the commits since the last tag. It fails without publishing if the tag doesn't match `version`.
+The `release` workflow (`.github/workflows/release.yml`) builds the jar, runs the tests and publishes it as a pre-release on [GitHub Releases](https://github.com/kevhauma/FiniteWorld/releases), with that changelog section as the notes. It fails without publishing if the tag doesn't match `version` or the changelog has no section for it.
 
 ## Test server
 
