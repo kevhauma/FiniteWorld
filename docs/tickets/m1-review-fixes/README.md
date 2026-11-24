@@ -13,7 +13,7 @@ worldgen code is written.
 | 03 | [Decide the radius for dedicated servers](03-dedicated-server-radius.md) | Design | Medium | Done |
 | 04 | [Define how the anchor planner samples unanchored climate](04-anchor-planner-climate-cycle.md) | Design | Medium | Done |
 | 05 | [Fix the stale router field in the fabric-worldgen-code skill](05-fix-worldgen-skill-router-field.md) | Skill | Medium | Open |
-| 06 | [Estimate the cost of conditional structure placement, or simplify it](06-structure-placement-cost.md) | Design | Medium | Open |
+| 06 | [Estimate the cost of conditional structure placement, or simplify it](06-structure-placement-cost.md) | Design | Medium | Done |
 | 07 | [Delete the template example mixins](07-delete-example-mixins.md) | Code | Medium | Done |
 | 08 | [Pin Loom to a release version](08-pin-loom-version.md) | Build | Medium | Done |
 | 09 | [Use a Java toolchain](09-java-toolchain.md) | Build | Low | Done |
