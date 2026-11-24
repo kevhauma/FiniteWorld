@@ -9,7 +9,7 @@ Drive one ticket from "open" to "done". The ticket is the source of truth: its *
 criteria** are the contract, and once every criterion passes its row in the plan's ticket
 table is marked `done`.
 
-Tickets live in `docs/tickets/<PREFIX>-<N>.md`; `docs/PLAN.md` is the mod's index (table with
+Tickets live in milestone folders, `docs/tickets/m<N>-<name>/<PREFIX>-<N>.md`; `docs/PLAN.md` is the mod's index (table with
 priority, area, status) plus the suggested `## Order`. Other plan files in `docs/` (`*PLAN.md`,
 e.g. `docs/TEST-SERVER-PLAN.md`) index their own tickets the same way. The design the mod implements is in
 `docs/design.md` (the **design doc**; its decision log is
@@ -22,7 +22,7 @@ On Windows use `gradlew.bat` in place of `./gradlew`. JDK 25 must be on `JAVA_HO
 
 Work the ticket inline for a single ticket, or when the user wants to review the plan and steer.
 When the user wants **several tickets in a row**, hand each to a `general-purpose` subagent with
-"Run the work-ticket skill on <ID> (docs/tickets/<ID>.md). The user pre-approved the plan. Leave
+"Run the work-ticket skill on <ID> (docs/tickets/<milestone>/<ID>.md). The user pre-approved the plan. Leave
 in-game checks open." It reports back a short summary.
 
 - **One subagent at a time. Never two in parallel**: they share one working tree and one Gradle
@@ -35,7 +35,7 @@ in-game checks open." It reports back a short summary.
 
 ## Step 1 — Locate the ticket
 
-- **If the user named a ticket** (ID like `EDGE-1` or a path), open `docs/tickets/<ID>.md`.
+- **If the user named a ticket** (ID like `EDGE-1` or a path), open `docs/tickets/*/<ID>.md`.
 - **If no ticket was named**, read the plan tables (`docs/*PLAN.md`) for rows that are not `done`, follow the
   `## Order` list and priorities, check each candidate's Notes for an unmet dependency, and ask
   via `AskUserQuestion` which one to work. Present the real open tickets you found.

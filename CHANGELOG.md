@@ -6,7 +6,7 @@ Each release's section becomes its GitHub release notes: the `release` workflow 
 
 ### Fixed
 
-- A radius outside 3,000–20,000 set by a datapack or an edited `level.dat` now fails to load the world instead of being used (M1-02).
+- A radius outside 3,000–20,000 set by a datapack or an edited `level.dat` now fails to load the world instead of being used (M7-02).
 
 ## 26.3.0
 
@@ -25,4 +25,4 @@ First release, first tagged as 1.0.0. **Requires** Minecraft 26.3, Fabric Loader
 ### Known issues
 
 - Along some stretches the coast still traces the circle, for example ~1,700 blocks of seed 12345's west coast at radius 3,000 (EDGE-3).
-- A radius set outside the Create World screen and server setting (datapack, edited `level.dat`) isn't checked against the 3,000–20,000 limits (M1-02).
+- A radius set outside the Create World screen and server setting (datapack, edited `level.dat`) isn't checked against the 3,000–20,000 limits (M7-02).

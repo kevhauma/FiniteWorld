@@ -9,7 +9,7 @@ The land is vanilla terrain at vanilla scale, different for every seed. The mod 
 
 **Why?** An endless world never runs out, so nothing on it is scarce and nowhere is far. A finite island gives a world a shape: a coastline you can sail around, a map you can fill in completely, and neighbours on a server who share the same land instead of spreading out forever. The guarantee keeps that from costing anything: you won't need to leave the island to find a jungle, a mesa or an ancient city.
 
-> **Status:** early development, but playable. The edge, spawn on land, the radius setting and the structure guarantee work. Steering climate toward missing biomes ([ANC-3](docs/tickets/ANC-3.md)) and a more natural coastline ([EDGE-2](docs/tickets/EDGE-2.md)) are in progress. See the [plan](docs/PLAN.md) and the full [design](docs/design.md).
+> **Status:** early development, but playable. The edge, spawn on land, the radius setting and the structure guarantee work. Steering climate toward missing biomes ([ANC-3](docs/tickets/m2-biome-guarantee/ANC-3.md)) and a more natural coastline ([EDGE-2](docs/tickets/m5-polish/EDGE-2.md)) are in progress. See the [plan](docs/PLAN.md) and the full [design](docs/design.md).
 
 ## Showcase
 
@@ -94,7 +94,7 @@ The `release` workflow (`.github/workflows/release.yml`) builds the jar, runs th
 
 ## Test server
 
-A standalone server for pre-generating whole Finite worlds and viewing them in a browser, outside the repo; see the [test server plan](docs/TEST-SERVER-PLAN.md). `mods/` holds the built `finiteworld-1.0.0.jar`, Fabric API, [Chunky](https://modrinth.com/plugin/chunky) and [BlueMap](https://modrinth.com/plugin/bluemap) (versions in [SRV-1](docs/tickets/SRV-1.md)). None of them is a dependency of the mod.
+A standalone server for pre-generating whole Finite worlds and viewing them in a browser, outside the repo; see the [test server plan](docs/TEST-SERVER-PLAN.md). `mods/` holds the built `finiteworld-1.0.0.jar`, Fabric API, [Chunky](https://modrinth.com/plugin/chunky) and [BlueMap](https://modrinth.com/plugin/bluemap) (versions in [SRV-1](docs/tickets/m6-test-server/SRV-1.md)). None of them is a dependency of the mod.
 
 ```properties
 level-name=r3000
