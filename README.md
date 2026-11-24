@@ -81,6 +81,17 @@ On Windows use `gradlew.bat` in place of `./gradlew`.
 
 Versions live in `gradle.properties`; check current ones at <https://fabricmc.net/develop>. Fabric's developer docs are at <https://docs.fabricmc.net/develop/>.
 
+### Releasing
+
+Set `version` in `gradle.properties`, commit, then push a matching tag:
+
+```sh
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The `release` workflow (`.github/workflows/release.yml`) builds the jar, runs the tests and publishes it as a pre-release on [GitHub Releases](https://github.com/kevhauma/FiniteWorld/releases), with notes generated from the commits since the last tag. It fails without publishing if the tag doesn't match `version`.
+
 ## Test server
 
 A standalone server for pre-generating whole Finite worlds and viewing them in a browser, outside the repo; see the [test server plan](docs/TEST-SERVER-PLAN.md). `mods/` holds the built `finiteworld-1.0.0.jar`, Fabric API, [Chunky](https://modrinth.com/plugin/chunky) and [BlueMap](https://modrinth.com/plugin/bluemap) (versions in [SRV-1](docs/tickets/SRV-1.md)). None of them is a dependency of the mod.
