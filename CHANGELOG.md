@@ -1,16 +1,16 @@
 # Changelog
 
-Each release's section becomes its GitHub release notes: the `release` workflow publishes the text under `## <version>`.
+Each release's section becomes its GitHub release notes: the `release` workflow publishes the text under `## <version>`. Versions follow Minecraft: `<minecraft version>.<patch>`, so 26.3.1 is the second release for Minecraft 26.3.
 
-## Unreleased
+## 26.3.1
 
 ### Fixed
 
 - A radius outside 3,000–20,000 set by a datapack or an edited `level.dat` now fails to load the world instead of being used (M1-02).
 
-## 1.0.0
+## 26.3.0
 
-First release. **Requires** Minecraft 26.3, Fabric Loader 0.20.1+, Fabric API 0.166.2+ and Java 25.
+First release, first tagged as 1.0.0. **Requires** Minecraft 26.3, Fabric Loader 0.20.1+, Fabric API 0.166.2+ and Java 25.
 
 ### Added
 
