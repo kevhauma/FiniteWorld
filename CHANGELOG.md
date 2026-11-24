@@ -2,6 +2,12 @@
 
 Each release's section becomes its GitHub release notes: the `release` workflow publishes the text under `## <version>`.
 
+## Unreleased
+
+### Fixed
+
+- A radius outside 3,000–20,000 set by a datapack or an edited `level.dat` now fails to load the world instead of being used (M1-02).
+
 ## 1.0.0
 
 First release. **Requires** Minecraft 26.3, Fabric Loader 0.20.1+, Fabric API 0.166.2+ and Java 25.

@@ -6,6 +6,7 @@ import io.github.kevhauma.finiteworld.edge.EdgeDensityFunction;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +35,8 @@ public final class FiniteRadius {
 	public static final int MIN = 3000;
 	// Planning cost grows with radius² (about 0.3 s at 4,000), so 20,000 keeps world creation to seconds.
 	public static final int MAX = 20000;
+	/** The {@code radius} field of {@code edge_cap} and {@code anchor_plan}: a datapack or edited level.dat outside [MIN, MAX] fails to load. */
+	public static final Codec<Float> CODEC = Codec.floatRange(MIN, MAX);
 	// Also a finiteworld:edge, but its radius is the spawn ramp's, not the world's.
 	private static final Identifier SPAWN_DISTANCE = FiniteWorld.id("spawn_distance");
 

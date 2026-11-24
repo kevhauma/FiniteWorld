@@ -1,5 +1,6 @@
 package io.github.kevhauma.finiteworld.anchor;
 
+import io.github.kevhauma.finiteworld.FiniteRadius;
 import io.github.kevhauma.finiteworld.FiniteWorld;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
 
@@ -54,7 +55,7 @@ public record AnchorPlanFunction(
 	private static final Cache<CompileContext, AnchorPlan> PLANS = CacheBuilder.newBuilder().weakKeys().recordStats().build();
 
 	public static final MapCodec<AnchorPlanFunction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-			ExtraCodecs.POSITIVE_FLOAT.fieldOf("radius").forGetter(AnchorPlanFunction::radius),
+			FiniteRadius.CODEC.fieldOf("radius").forGetter(AnchorPlanFunction::radius),
 			ExtraCodecs.POSITIVE_FLOAT.fieldOf("band").forGetter(AnchorPlanFunction::band),
 			MultiNoiseBiomeSourceParameterList.CODEC.fieldOf("biomes").forGetter(AnchorPlanFunction::biomes),
 			RegistryCodecs.holderSet(Registries.BIOME).fieldOf("exclude").forGetter(AnchorPlanFunction::exclude),

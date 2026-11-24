@@ -18,7 +18,8 @@ mirrors them. Once implemented, a bad radius fails loudly when the world loads.
 
 ## Acceptance criteria
 
-- [ ] The design doc's *Player experience* and *Technical approach* sections say the codec decides the minimum and
+- [x] The design doc's *Player experience* and *Technical approach* sections say the codec decides the minimum and
       maximum.
-- [ ] A maximum radius is decided too, or explicitly set to "none".
-- [ ] Once the edge density function exists, a unit test checks that decoding a radius below the minimum fails.
+- [x] A maximum radius is decided too, or explicitly set to "none".
+- [x] Once the edge density function exists, a unit test checks that decoding a radius below the minimum fails.
+      (`FiniteRadiusTest.codecRejectsRadiusOutOfRange`; the codec is `FiniteRadius.CODEC`, used by `edge_cap` and `anchor_plan`. Maximum: 20,000, decision 13.)

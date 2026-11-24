@@ -1,9 +1,10 @@
 package io.github.kevhauma.finiteworld.edge;
 
+import io.github.kevhauma.finiteworld.FiniteRadius;
+
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Interval;
 import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
@@ -22,7 +23,7 @@ public record EdgeCapDensityFunction(DensityFunction input, float radius, int se
 
 	public static final MapCodec<EdgeCapDensityFunction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
 			DensityFunction.CODEC.fieldOf("input").forGetter(EdgeCapDensityFunction::input),
-			ExtraCodecs.POSITIVE_FLOAT.fieldOf("radius").forGetter(EdgeCapDensityFunction::radius),
+			FiniteRadius.CODEC.fieldOf("radius").forGetter(EdgeCapDensityFunction::radius),
 			Codec.INT.fieldOf("sea_level").forGetter(EdgeCapDensityFunction::seaLevel)
 		)
 		.apply(i, EdgeCapDensityFunction::new));

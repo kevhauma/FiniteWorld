@@ -9,7 +9,7 @@ worldgen code is written.
 | # | Ticket | Area | Severity | Status |
 | --- | --- | --- | --- | --- |
 | 01 | [Edge and anchors must reach terrain, not just the router](01-edge-must-reach-terrain.md) | Design | High | Done |
-| 02 | [Validate the radius in the codec](02-validate-radius-in-codec.md) | Design | High | Decided |
+| 02 | [Validate the radius in the codec](02-validate-radius-in-codec.md) | Design | High | Done |
 | 03 | [Decide the radius for dedicated servers](03-dedicated-server-radius.md) | Design | Medium | Done |
 | 04 | [Define how the anchor planner samples unanchored climate](04-anchor-planner-climate-cycle.md) | Design | Medium | Done |
 | 05 | [Fix the stale router field in the fabric-worldgen-code skill](05-fix-worldgen-skill-router-field.md) | Skill | Medium | Done |
