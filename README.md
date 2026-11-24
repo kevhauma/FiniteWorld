@@ -37,7 +37,7 @@ Top views of whole Finite worlds, pre-generated with [Chunky](https://modrinth.c
 ## Installing
 
 1. Install [Fabric Loader](https://fabricmc.net/use/) for Minecraft 26.3.
-2. Put [Fabric API](https://modrinth.com/mod/fabric-api) and `finiteworld-26.3.1.jar` in your `mods` folder. There is no published release yet: build the jar with `./gradlew build` (see [Development](#development)); it lands in `build/libs/`.
+2. Download the newest `finiteworld-<version>.jar` from [GitHub Releases](https://github.com/kevhauma/FiniteWorld/releases) (releases are marked pre-release for now) and put it with [Fabric API](https://modrinth.com/mod/fabric-api) in your `mods` folder. To build it yourself, run `./gradlew build` (see [Development](#development)); the jar lands in `build/libs/`.
 3. Start the game, open **Create World**, and under **World Type** pick **Finite**. Set the radius with **Customize** (default 4,000 blocks, from 3,000 to 20,000). The radius is fixed once the world is created. Normal worlds are not affected.
 
 On a dedicated server, install the same two jars in the server's `mods` folder and set the world type in `server.properties` before the world is first created:
