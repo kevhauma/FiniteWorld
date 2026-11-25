@@ -7,6 +7,7 @@ import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.UncheckedExecutionException;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ public record AnchorPlanFunction(
 	// shortcut: one plan per world, from whichever anchor_plan node compiles first; key on the node too if a world ever holds two.
 	private static final Cache<CompileContext, AnchorPlan> PLANS = CacheBuilder.newBuilder().weakKeys().recordStats().build();
 
-	public static final MapCodec<AnchorPlanFunction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+	public static final MapCodec<AnchorPlanFunction> CODEC = RecordCodecBuilder.<AnchorPlanFunction>mapCodec(i -> i.group(
 			FiniteRadius.CODEC.fieldOf("radius").forGetter(AnchorPlanFunction::radius),
 			ExtraCodecs.POSITIVE_FLOAT.fieldOf("band").forGetter(AnchorPlanFunction::band),
 			MultiNoiseBiomeSourceParameterList.CODEC.fieldOf("biomes").forGetter(AnchorPlanFunction::biomes),
@@ -66,7 +67,15 @@ public record AnchorPlanFunction(
 			DensityFunction.CODEC.fieldOf("erosion").forGetter(AnchorPlanFunction::erosion),
 			DensityFunction.CODEC.fieldOf("ridges").forGetter(AnchorPlanFunction::ridges)
 		)
-		.apply(i, AnchorPlanFunction::new));
+		.apply(i, AnchorPlanFunction::new))
+		.validate(AnchorPlanFunction::validate);
+
+	/** Rejects a band that leaves no room for one anchor disc inside the radius. */
+	static DataResult<AnchorPlanFunction> validate(AnchorPlanFunction plan) {
+		return plan.band > plan.radius - AnchorPlanner.ANCHOR_RADIUS
+			? DataResult.error(() -> "band (" + plan.band + ") must leave room for an anchor (" + AnchorPlanner.ANCHOR_RADIUS + ") inside radius (" + plan.radius + ")")
+			: DataResult.success(plan);
+	}
 
 	/** How many plans have been computed in this JVM (one per Finite world load); failed plans don't count. */
 	public static long plansComputed() {

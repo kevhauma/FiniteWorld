@@ -7,7 +7,15 @@ import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.JsonOps;
 
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 
@@ -94,6 +102,26 @@ public class AnchorPlanGameTest {
 				Component.literal("Expected \"Anchor planning failed\" caused by \"No room for …\", got " + e + " caused by " + e.getCause()));
 		}
 		helper.assertTrue(AnchorPlanFunction.plansComputed() == before, Component.literal("A failed plan was counted"));
+		helper.succeed();
+	}
+
+	/** The shipped plan's band decodes at every radius from MIN to MAX; a band leaving no room for an anchor doesn't. */
+	@GameTest
+	public void planCodecChecksTheBand(GameTestHelper helper) {
+		RegistryAccess registries = helper.getLevel().registryAccess();
+		AnchorPlanFunction p = (AnchorPlanFunction) registries.lookupOrThrow(Registries.DENSITY_FUNCTION).getValueOrThrow(PLAN);
+		DynamicOps<JsonElement> ops = registries.createSerializationContext(JsonOps.INSTANCE);
+		Codec<AnchorPlanFunction> codec = AnchorPlanFunction.CODEC.codec();
+		List<String> rejected = IntStream.iterate(FiniteRadius.MIN, r -> r <= FiniteRadius.MAX, r -> r + 1000)
+			.mapToObj(radius -> new AnchorPlanFunction(radius, p.band(), p.biomes(), p.exclude(), p.temperature(), p.vegetation(), p.continents(), p.erosion(), p.ridges()))
+			.map(plan -> codec.encodeStart(ops, plan).flatMap(json -> codec.parse(ops, json)))
+			.filter(DataResult::isError)
+			.map(result -> result.error().orElseThrow().message())
+			.toList();
+		helper.assertTrue(rejected.isEmpty(), Component.literal("Band " + p.band() + " rejected: " + rejected));
+		JsonObject noRoom = codec.encodeStart(ops, p).getOrThrow().getAsJsonObject();
+		noRoom.addProperty("band", p.radius() - 191.0F);
+		helper.assertTrue(codec.parse(ops, noRoom).isError(), Component.literal("Band " + (p.radius() - 191.0F) + " at radius " + p.radius() + " decoded"));
 		helper.succeed();
 	}
 

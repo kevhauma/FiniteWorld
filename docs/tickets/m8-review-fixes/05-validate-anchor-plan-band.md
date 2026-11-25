@@ -29,10 +29,14 @@ and fails later, or produces nonsense.
 
 ## Acceptance criteria
 
-- [ ] Decoding an `anchor_plan` with a band that leaves less than one anchor radius fails with a clear message.
-- [ ] Unit test: one valid and one invalid band decode as expected.
-- [ ] The shipped `anchor_plan.json` (radius 4,000, band 500) and every radius from 3,000 to 20,000 still decode.
-- [ ] `./gradlew build` passes.
+- [x] Decoding an `anchor_plan` with a band that leaves less than one anchor radius fails with a clear message.
+      (`AnchorPlanFunction.CODEC` validates: "band (…) must leave room for an anchor (192) inside radius (…)".)
+- [x] Unit test: one valid and one invalid band decode as expected. (`AnchorPlanFunctionTest` checks the validator at
+      and around the limit; `AnchorPlanGameTest.planCodecChecksTheBand` decodes the shipped plan with a band of
+      radius − 191 through the real codec and expects an error.)
+- [x] The shipped `anchor_plan.json` (radius 4,000, band 500) and every radius from 3,000 to 20,000 still decode.
+      (The registry loads it; the same game test round-trips band 500 at every 1,000 from 3,000 to 20,000.)
+- [x] `./gradlew build` passes. (Unit tests and all 9 game tests.)
 
 ## Notes
 
