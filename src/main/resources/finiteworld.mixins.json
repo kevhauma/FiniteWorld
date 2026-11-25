@@ -5,7 +5,8 @@
 	"mixins": [
 		"ChunkGeneratorStructureStateMixin",
 		"ChunkMapMixin",
-		"NoiseBasedChunkGeneratorMixin"
+		"NoiseBasedChunkGeneratorMixin",
+		"SpreadingPlacementAccessor"
 	],
 	"server": [
 		"WorldDimensionDataMixin"

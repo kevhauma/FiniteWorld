@@ -30,6 +30,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BiomeTags;
+import net.minecraft.tags.StructureTags;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -44,8 +45,10 @@ import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.WorldDimensions;
+import net.minecraft.world.level.levelgen.structure.BuiltinStructureSets;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
@@ -82,6 +85,8 @@ public class GuaranteeGameTest {
 		BuiltinStructures.JUNGLE_TEMPLE, BuiltinStructures.SWAMP_HUT, BuiltinStructures.IGLOO, BuiltinStructures.RUINED_PORTAL_STANDARD,
 		BuiltinStructures.TRAIL_RUINS, BuiltinStructures.BURIED_TREASURE, BuiltinStructures.MINESHAFT, BuiltinStructures.MINESHAFT_MESA,
 		BuiltinStructures.STRONGHOLD, BuiltinStructures.TRIAL_CHAMBERS, BuiltinStructures.ANCIENT_CITY);
+	// Vanilla's pillager_outposts exclusion zone: no outpost within 10 chunks of the villages set.
+	private static final int OUTPOST_VILLAGE_GAP = 10;
 
 	@GameTest
 	public void guaranteeHoldsAcrossSeeds(GameTestHelper helper) {
@@ -183,6 +188,8 @@ public class GuaranteeGameTest {
 		LevelHeightAccessor heights = heights(overworld);
 		StructureTemplateManager templates = helper.getLevel().getServer().getStructureTemplateManager();
 		List<Holder<Structure>> required = REQUIRED_STRUCTURES.stream().<Holder<Structure>>map(registries.lookupOrThrow(Registries.STRUCTURE)::getOrThrow).toList();
+		Holder<Structure> outpost = registries.lookupOrThrow(Registries.STRUCTURE).getOrThrow(BuiltinStructures.PILLAGER_OUTPOST);
+		StructureSet villages = registries.lookupOrThrow(Registries.STRUCTURE_SET).getValueOrThrow(BuiltinStructureSets.VILLAGES);
 
 		List<StructureResult> results = STRUCTURE_RADII.stream()
 			.flatMap(radius -> STRUCTURE_SEEDS.stream().map(seed -> new Run(seed, radius)))
@@ -192,7 +199,13 @@ public class GuaranteeGameTest {
 				NoiseGeneratorSettings settings = FiniteRadius.withRadius(preset.generatorSettings().value(), run.radius());
 				NoiseBasedChunkGenerator generator = new NoiseBasedChunkGenerator(preset.getBiomeSource(), Holder.direct(settings));
 				StructureStarts starts = structureStarts(generator, registries, templates, heights, run.seed());
-				return new StructureResult(run.seed(), run.radius(), startsInside(starts, run.radius(), false), startsInside(starts, run.radius(), true));
+				Map<Holder<Structure>, ChunkPos> fallback = startsInside(starts, run.radius(), true);
+				// Every village start an outpost inside the radius could neighbour: vanilla's, and the fallback villages.
+				List<ChunkPos> villageStarts = Stream.concat(
+						starts.startChunks(villages, run.radius() + 16 * (OUTPOST_VILLAGE_GAP + 1)).filter(chunk -> starts.generatingAt(villages, chunk) != null),
+						fallback.entrySet().stream().filter(e -> e.getKey().is(StructureTags.VILLAGE)).map(Map.Entry::getValue))
+					.toList();
+				return new StructureResult(run.seed(), run.radius(), startsInside(starts, run.radius(), false), fallback, villageStarts);
 			})
 			.toList();
 
@@ -214,6 +227,12 @@ public class GuaranteeGameTest {
 			.flatMap(r -> r.fallback().keySet().stream().filter(r.vanilla()::containsKey).map(s -> "seed " + r.seed() + " radius " + (int) r.radius() + " " + s.getRegisteredName()))
 			.toList();
 		helper.assertTrue(needless.isEmpty(), Component.literal("Fallback placed although vanilla starts one: " + needless));
+		List<String> raided = results.stream()
+			.filter(r -> r.fallback().containsKey(outpost) && r.villages().stream().anyMatch(v -> v.getChessboardDistance(r.fallback().get(outpost)) <= OUTPOST_VILLAGE_GAP))
+			.map(r -> "seed " + r.seed() + " radius " + (int) r.radius() + " outpost at chunk " + r.fallback().get(outpost))
+			.toList();
+		FiniteWorld.LOGGER.info("[STR-2] fallback outposts: {}, within {} chunks of a village: {}", results.stream().filter(r -> r.fallback().containsKey(outpost)).count(), OUTPOST_VILLAGE_GAP, raided);
+		helper.assertTrue(raided.isEmpty(), Component.literal("Fallback outpost within " + OUTPOST_VILLAGE_GAP + " chunks of a village: " + raided));
 
 		// Default worlds: the anchored sets are global data, but without a plan they place nothing and plan nothing.
 		long plansBefore = AnchorPlanFunction.plansComputed();
@@ -392,7 +411,7 @@ public class GuaranteeGameTest {
 	private record Run(long seed, float radius) {
 	}
 
-	private record StructureResult(long seed, float radius, Map<Holder<Structure>, ChunkPos> vanilla, Map<Holder<Structure>, ChunkPos> fallback) {
+	private record StructureResult(long seed, float radius, Map<Holder<Structure>, ChunkPos> vanilla, Map<Holder<Structure>, ChunkPos> fallback, List<ChunkPos> villages) {
 	}
 
 	private record Result(long seed, float radius, List<String> landPastRadius, int edgeColumns, Set<Holder<Biome>> found, AnchorPlan plan, Shares shares) {

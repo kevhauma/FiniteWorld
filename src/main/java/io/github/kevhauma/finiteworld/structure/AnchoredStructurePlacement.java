@@ -4,14 +4,18 @@ import io.github.kevhauma.finiteworld.FiniteRadius;
 import io.github.kevhauma.finiteworld.FiniteWorld;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanFunction;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
+import io.github.kevhauma.finiteworld.mixin.SpreadingPlacementAccessor;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.mojang.serialization.MapCodec;
 
 import net.minecraft.core.Holder;
@@ -27,6 +31,7 @@ import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
+import net.minecraft.world.level.levelgen.structure.placement.AbstractSpreadingStructurePlacement;
 import net.minecraft.world.level.levelgen.structure.placement.ConcentricRingsStructurePlacement;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
@@ -58,13 +63,27 @@ public class AnchoredStructurePlacement extends ConcentricRingsStructurePlacemen
 
 	/** Called once per world before structure positions are computed; {@code heights} must not reference the level. */
 	public static void register(ChunkGeneratorStructureState state, ChunkGenerator generator, RegistryAccess registries, StructureTemplateManager templates, LevelHeightAccessor heights) {
-		WORLDS.put(state, new World(generator, registries, templates, heights));
+		WORLDS.put(state, new World(generator, registries, templates, heights, CacheBuilder.newBuilder().build()));
 	}
 
-	/** This world's fallback start: none in Default worlds, none when vanilla starts the structure inside the radius, else one chunk in a host anchor. */
+	/**
+	 * This world's fallback start: none in Default worlds, none when vanilla starts the structure inside the radius, else one
+	 * chunk in a host anchor. Computed once per world, so another set's search can read it (an outpost avoids fallback villages).
+	 */
 	public List<ChunkPos> positions(ChunkGeneratorStructureState state) {
 		World world = WORLDS.getIfPresent(state);
-		if (world == null || !(world.generator() instanceof NoiseBasedChunkGenerator generator)) {
+		if (world == null) {
+			return List.of();
+		}
+		try {
+			return world.positions().get(this, () -> this.search(state, world));
+		} catch (ExecutionException | UncheckedExecutionException e) {
+			throw new IllegalStateException("Fallback search failed for " + this.structure.getRegisteredName(), e.getCause());
+		}
+	}
+
+	private List<ChunkPos> search(ChunkGeneratorStructureState state, World world) {
+		if (!(world.generator() instanceof NoiseBasedChunkGenerator generator)) {
 			return List.of();
 		}
 		NoiseGeneratorSettings settings = generator.generatorSettings().value();
@@ -74,9 +93,11 @@ public class AnchoredStructurePlacement extends ConcentricRingsStructurePlacemen
 			return List.of();
 		}
 		StructureStarts starts = new StructureStarts(state, generator, world.registries(), world.templates(), world.heights());
-		Optional<ChunkPos> vanilla = state.possibleStructureSets().stream()
+		List<StructureSet> vanillaSets = state.possibleStructureSets().stream()
 			.map(Holder::value)
 			.filter(set -> !(set.placement() instanceof AnchoredStructurePlacement) && set.structures().stream().anyMatch(entry -> entry.structure().value() == this.structure.value()))
+			.toList();
+		Optional<ChunkPos> vanilla = vanillaSets.stream()
 			.flatMap(set -> starts.startChunks(set, radius.get()).filter(chunk -> this.isStructure(starts.generatingAt(set, chunk))))
 			.findFirst();
 		if (vanilla.isPresent()) {
@@ -87,12 +108,38 @@ public class AnchoredStructurePlacement extends ConcentricRingsStructurePlacemen
 			.filter(anchor -> this.structure.value().biomes().stream().anyMatch(biome -> biome.getRegisteredName().equals(anchor.biome())))
 			.map(anchor -> new ChunkPos(SectionPos.blockToSectionCoord(anchor.x()), SectionPos.blockToSectionCoord(anchor.z())))
 			.toList();
+		Predicate<ChunkPos> allowed = allowedBy(vanillaSets, state);
 		// Every anchor is inside the disc, so rings out to its diameter cover it.
 		Optional<ChunkPos> fallback = chunksOutward(hosts, 2 * SectionPos.blockToSectionCoord(radius.get().intValue()) + 1)
-			.filter(chunk -> StructureStarts.inside(chunk, radius.get()) && starts.hasBiomeInColumn(this.structure, chunk) && starts.canStart(this.structure, chunk))
+			.filter(chunk -> StructureStarts.inside(chunk, radius.get()) && allowed.test(chunk) && starts.hasBiomeInColumn(this.structure, chunk) && starts.canStart(this.structure, chunk))
 			.findFirst();
 		FiniteWorld.LOGGER.info("[STR-2] {}: vanilla starts none inside radius {}, fallback at chunk {}", this.structure.getRegisteredName(), radius.get().intValue(), fallback.map(Object::toString).orElse("none found"));
 		return fallback.stream().toList();
+	}
+
+	/**
+	 * The exclusion zones of the vanilla sets holding this structure (an outpost keeps 10 chunks from the villages set): the
+	 * other set's own candidates, as vanilla checks them, and the fallback starts of the other set's structures (a fallback village).
+	 * shortcut: two anchored structures whose zones name each other would wait on each other's search; no vanilla set does that.
+	 */
+	private static Predicate<ChunkPos> allowedBy(List<StructureSet> vanillaSets, ChunkGeneratorStructureState state) {
+		return vanillaSets.stream()
+			.flatMap(set -> set.placement() instanceof AbstractSpreadingStructurePlacement spread ? ((SpreadingPlacementAccessor) spread).finiteworld$exclusionZone().stream() : Stream.empty())
+			.map(zone -> {
+				List<ChunkPos> fallbacks = fallbackStarts(state, zone.otherSet().value());
+				return (Predicate<ChunkPos>) chunk -> !state.hasStructureChunkInRange(zone.otherSet(), chunk.x(), chunk.z(), zone.chunkCount())
+					&& fallbacks.stream().noneMatch(start -> start.getChessboardDistance(chunk) <= zone.chunkCount());
+			})
+			.reduce(chunk -> true, Predicate::and);
+	}
+
+	/** The fallback starts of the anchored sets whose structure is one of {@code set}'s. */
+	private static List<ChunkPos> fallbackStarts(ChunkGeneratorStructureState state, StructureSet set) {
+		return state.possibleStructureSets().stream()
+			.map(holder -> holder.value().placement())
+			.filter(placement -> placement instanceof AnchoredStructurePlacement anchored && set.structures().stream().anyMatch(entry -> entry.structure().value() == anchored.structure.value()))
+			.flatMap(placement -> ((AnchoredStructurePlacement) placement).positions(state).stream())
+			.toList();
 	}
 
 	private boolean isStructure(Holder<Structure> generating) {
@@ -133,6 +180,6 @@ public class AnchoredStructurePlacement extends ConcentricRingsStructurePlacemen
 		return CODEC;
 	}
 
-	private record World(ChunkGenerator generator, RegistryAccess registries, StructureTemplateManager templates, LevelHeightAccessor heights) {
+	private record World(ChunkGenerator generator, RegistryAccess registries, StructureTemplateManager templates, LevelHeightAccessor heights, Cache<AnchoredStructurePlacement, List<ChunkPos>> positions) {
 	}
 }

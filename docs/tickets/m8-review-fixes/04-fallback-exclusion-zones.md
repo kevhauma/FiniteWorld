@@ -32,11 +32,13 @@ position check doesn't look at one, so a fallback outpost can start inside a vil
 
 ## Acceptance criteria
 
-- [ ] No fallback pillager outpost starts within 10 chunks of a village start on seeds 1–50 at radius 3,000 and
-      4,000 (new assertion in `GuaranteeGameTest.structuresInsideRadius`).
-- [ ] Every checklist structure still starts inside the radius on those seeds.
-- [ ] Default worlds are unaffected (existing assertion).
-- [ ] `./gradlew build` passes.
+- [x] No fallback pillager outpost starts within 10 chunks of a village start on seeds 1–50 at radius 3,000 and
+      4,000 (new assertion in `GuaranteeGameTest.structuresInsideRadius`). (The assertion counts vanilla village starts
+      and fallback villages. Before the fix it failed on seed 42 at 3,000: the fallback outpost sat on the fallback
+      snowy village's chunk. After it: 7 fallback outposts, none within 10 chunks; 2 of them moved.)
+- [x] Every checklist structure still starts inside the radius on those seeds. (Same game test, passes.)
+- [x] Default worlds are unaffected (existing assertion). (Passes.)
+- [x] `./gradlew build` passes. (Unit tests and all 8 game tests.)
 
 ## Notes
 
@@ -44,3 +46,10 @@ position check doesn't look at one, so a fallback outpost can start inside a vil
   hardcoding "villages".
 - Fallback villages are computed by other anchored sets in parallel; checking them may need an order between
   sets. If not worth it, record it as a `shortcut:` comment.
+
+## Outcome
+
+The fallback reads each vanilla set's exclusion zone through an accessor mixin (`SpreadingPlacementAccessor`) and
+checks it the way vanilla does (`hasStructureChunkInRange` on the other set), plus the fallback starts of the other
+set's structures. To read those, each world's fallback positions are cached, so the outpost's search reads the
+village fallbacks instead of racing the structure state.
