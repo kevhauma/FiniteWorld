@@ -76,6 +76,27 @@ public class AnchorPlanGameTest {
 		helper.succeed();
 	}
 
+	/** A planner failure surfaces as "Anchor planning failed" with the planner's own exception as its cause. */
+	@GameTest
+	public void planningFailureNamesTheCause(GameTestHelper helper) {
+		RegistryAccess registries = helper.getLevel().registryAccess();
+		NoiseGeneratorSettings finite = ((NoiseBasedChunkGenerator) GuaranteeGameTest.finiteOverworld(registries).generator()).generatorSettings().value();
+		AnchorPlanFunction p = (AnchorPlanFunction) registries.lookupOrThrow(Registries.DENSITY_FUNCTION).getValueOrThrow(PLAN);
+		// Radius minus band below one anchor radius: the codec rejects this, so build it in code.
+		AnchorPlanFunction noRoom = new AnchorPlanFunction(3000.0F, 2900.0F, p.biomes(), p.exclude(), p.temperature(), p.vegetation(), p.continents(), p.erosion(), p.ridges());
+		RandomState random = RandomState.create(registries.lookupOrThrow(Registries.NOISE), SEED, finite);
+		long before = AnchorPlanFunction.plansComputed();
+		try {
+			random.getSampler(noRoom);
+			helper.fail(Component.literal("Planning with no room for anchors did not fail"));
+		} catch (IllegalStateException e) {
+			helper.assertTrue("Anchor planning failed".equals(e.getMessage()) && e.getCause() instanceof IllegalStateException cause && cause.getMessage().startsWith("No room for"),
+				Component.literal("Expected \"Anchor planning failed\" caused by \"No room for …\", got " + e + " caused by " + e.getCause()));
+		}
+		helper.assertTrue(AnchorPlanFunction.plansComputed() == before, Component.literal("A failed plan was counted"));
+		helper.succeed();
+	}
+
 	/** A fresh RandomState with every router function compiled, as world generation does. */
 	private static RandomState compileRouter(HolderGetter<NormalNoise> noises, long seed, NoiseGeneratorSettings settings) {
 		RandomState random = RandomState.create(noises, seed, settings);

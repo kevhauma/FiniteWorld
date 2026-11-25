@@ -6,6 +6,7 @@ import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
@@ -67,9 +68,9 @@ public record AnchorPlanFunction(
 		)
 		.apply(i, AnchorPlanFunction::new));
 
-	/** How many plans have been computed in this JVM (one per Finite world load). */
+	/** How many plans have been computed in this JVM (one per Finite world load); failed plans don't count. */
 	public static long plansComputed() {
-		return PLANS.stats().loadCount();
+		return PLANS.stats().loadSuccessCount();
 	}
 
 	/** The plan of the world (RandomState) these settings belong to, read through the settings' own plan node; empty without one (Default worlds), which plans nothing. */
@@ -91,7 +92,8 @@ public record AnchorPlanFunction(
 	public Sampler compileSampler(final DensityFunction.CompileContext context) {
 		try {
 			return new Sampler(PLANS.get(context, () -> this.plan(context)));
-		} catch (ExecutionException e) {
+		} catch (ExecutionException | UncheckedExecutionException e) {
+			// The planner throws unchecked exceptions, which Guava wraps in UncheckedExecutionException.
 			throw new IllegalStateException("Anchor planning failed", e.getCause());
 		}
 	}

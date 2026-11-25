@@ -29,12 +29,15 @@ The `catch` around the plan cache never runs for the planner's own failures, so 
 
 ## Acceptance criteria
 
-- [ ] A planner exception thrown while compiling the plan node surfaces with the planner's message directly
-      under the top-level exception.
-- [ ] A test triggers a planning failure (for example a radius minus band below the anchor radius, built in code)
-      and asserts the exception type and message.
-- [ ] `AnchorPlanFunction.plansComputed()` still counts one plan per world (`AnchorPlanGameTest` passes).
-- [ ] `./gradlew build` passes.
+- [x] A planner exception thrown while compiling the plan node surfaces with the planner's message directly
+      under the top-level exception. (`AnchorPlanFunction.compileSampler` also catches `UncheckedExecutionException`
+      and rethrows `IllegalStateException("Anchor planning failed", cause)`.)
+- [x] A test triggers a planning failure (for example a radius minus band below the anchor radius, built in code)
+      and asserts the exception type and message. (`AnchorPlanGameTest.planningFailureNamesTheCause`: radius 3,000,
+      band 2,900; the cause is the planner's "No room for …" exception.)
+- [x] `AnchorPlanFunction.plansComputed()` still counts one plan per world (`AnchorPlanGameTest` passes). (It now
+      reads `loadSuccessCount()`, so a failed plan isn't counted; the new test asserts that.)
+- [x] `./gradlew build` passes. (Unit tests and all 8 game tests.)
 
 ## Notes
 
