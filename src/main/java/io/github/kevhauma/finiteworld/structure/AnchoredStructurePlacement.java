@@ -3,7 +3,6 @@ package io.github.kevhauma.finiteworld.structure;
 import io.github.kevhauma.finiteworld.FiniteRadius;
 import io.github.kevhauma.finiteworld.FiniteWorld;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanFunction;
-import io.github.kevhauma.finiteworld.anchor.AnchorPlanner;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
 
 import java.util.List;
@@ -84,9 +83,12 @@ public class AnchoredStructurePlacement extends ConcentricRingsStructurePlacemen
 			FiniteWorld.LOGGER.info("[STR-2] {}: vanilla starts one at chunk {}, no fallback", this.structure.getRegisteredName(), vanilla.get());
 			return List.of();
 		}
-		Optional<ChunkPos> fallback = plan.get().anchors().stream()
+		List<ChunkPos> hosts = plan.get().anchors().stream()
 			.filter(anchor -> this.structure.value().biomes().stream().anyMatch(biome -> biome.getRegisteredName().equals(anchor.biome())))
-			.flatMap(anchor -> chunksOutward(anchor, radius.get()))
+			.map(anchor -> new ChunkPos(SectionPos.blockToSectionCoord(anchor.x()), SectionPos.blockToSectionCoord(anchor.z())))
+			.toList();
+		// Every anchor is inside the disc, so rings out to its diameter cover it.
+		Optional<ChunkPos> fallback = chunksOutward(hosts, 2 * SectionPos.blockToSectionCoord(radius.get().intValue()) + 1)
 			.filter(chunk -> StructureStarts.inside(chunk, radius.get()) && starts.hasBiomeInColumn(this.structure, chunk) && starts.canStart(this.structure, chunk))
 			.findFirst();
 		FiniteWorld.LOGGER.info("[STR-2] {}: vanilla starts none inside radius {}, fallback at chunk {}", this.structure.getRegisteredName(), radius.get().intValue(), fallback.map(Object::toString).orElse("none found"));
@@ -98,21 +100,32 @@ public class AnchoredStructurePlacement extends ConcentricRingsStructurePlacemen
 	}
 
 	/**
-	 * Chunks in square rings around the anchor's chunk, outward, far enough to cover the whole disc of {@code radius}.
-	 * The anchor fixes the 2D climate, but a start can still fail on terrain (a pyramid below sea level) or depth (no
-	 * deep dark at an ancient city's height), so the search goes on past the anchor's disc. Lazy: it stops at the first fit.
+	 * Chunks in square rings around the host anchors' chunks, outward: ring 0 of every anchor, then ring 1 of every anchor,
+	 * and so on out to {@code rings}, so the first fit is the one nearest to any host anchor. A chunk an earlier step
+	 * already visited (a smaller ring of any anchor, or the same ring of an earlier one) is skipped, so the disc is covered
+	 * once however many anchors there are. The anchor fixes the 2D climate, but a start can still fail on terrain (a
+	 * pyramid below sea level) or depth (no deep dark at an ancient city's height), so the search goes on past the anchor
+	 * discs. Lazy: it stops at the first fit.
 	 * shortcut: a world with no valid spot at all scans every chunk inside the radius (seconds at 3,000; minutes near
 	 * the 20,000 maximum, on a background thread that chunk generation waits on). None of the 100 tested worlds needs it.
 	 */
-	private static Stream<ChunkPos> chunksOutward(AnchorPlanner.Anchor anchor, float radius) {
-		int x = SectionPos.blockToSectionCoord(anchor.x());
-		int z = SectionPos.blockToSectionCoord(anchor.z());
-		// The anchor is inside the disc, so rings out to its diameter cover it.
-		return Stream.concat(Stream.of(new ChunkPos(x, z)), IntStream.rangeClosed(1, 2 * SectionPos.blockToSectionCoord((int) radius) + 1).boxed()
-			.flatMap(ring -> Stream.concat(
-				// Top and bottom rows with their corners, then the sides between them.
-				IntStream.rangeClosed(-ring, ring).boxed().flatMap(d -> Stream.of(new ChunkPos(x + d, z - ring), new ChunkPos(x + d, z + ring))),
-				IntStream.rangeClosed(1 - ring, ring - 1).boxed().flatMap(d -> Stream.of(new ChunkPos(x - ring, z + d), new ChunkPos(x + ring, z + d))))));
+	static Stream<ChunkPos> chunksOutward(List<ChunkPos> centres, int rings) {
+		return IntStream.rangeClosed(0, rings).boxed()
+			.flatMap(ring -> IntStream.range(0, centres.size()).boxed()
+				.flatMap(i -> ring(centres.get(i), ring).filter(chunk -> IntStream.range(0, centres.size()).noneMatch(j -> {
+					int distance = chunk.getChessboardDistance(centres.get(j));
+					return distance < ring || distance == ring && j < i;
+				}))));
+	}
+
+	/** The square ring of chunks at chessboard distance {@code ring} from {@code centre}. */
+	private static Stream<ChunkPos> ring(ChunkPos centre, int ring) {
+		int x = centre.x();
+		int z = centre.z();
+		return ring == 0 ? Stream.of(centre) : Stream.concat(
+			// Top and bottom rows with their corners, then the sides between them.
+			IntStream.rangeClosed(-ring, ring).boxed().flatMap(d -> Stream.of(new ChunkPos(x + d, z - ring), new ChunkPos(x + d, z + ring))),
+			IntStream.rangeClosed(1 - ring, ring - 1).boxed().flatMap(d -> Stream.of(new ChunkPos(x - ring, z + d), new ChunkPos(x + ring, z + d))));
 	}
 
 	@Override

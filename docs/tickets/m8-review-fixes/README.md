@@ -13,7 +13,7 @@ validated, and the code reads plainly.
 
 | # | Ticket | Area | Severity | Status |
 | --- | --- | --- | --- | --- |
-| 01 | [Search every host anchor before widening the fallback search](01-fallback-search-all-anchors.md) | Structures | Medium | open |
+| 01 | [Search every host anchor before widening the fallback search](01-fallback-search-all-anchors.md) | Structures | Medium | done |
 | 02 | [Make the anchor-planning error handler reachable](02-dead-catch-anchor-planning.md) | Anchors | Low | open |
 | 03 | [Stop the planner timing test from gating the build](03-flaky-planner-timing-test.md) | Build/CI | Low | open |
 | 04 | [Respect vanilla exclusion zones in the fallback](04-fallback-exclusion-zones.md) | Structures | Low | open |

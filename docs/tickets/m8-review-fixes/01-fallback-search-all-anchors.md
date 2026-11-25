@@ -36,14 +36,16 @@ the whole disc. The second and later anchors are only reached if no chunk anywhe
 
 ## Acceptance criteria
 
-- [ ] For a structure with several host anchors, a chunk at ring r of the second anchor is chosen over any chunk
-      at ring r+1 or further of the first anchor.
-- [ ] A unit test covers the interleaved order on a small synthetic case (two anchors, the first with no valid
-      chunk within a few rings).
-- [ ] `GuaranteeGameTest.structuresInsideRadius` still passes (all 19 structures on seeds 1–50 at 3,000 and
-      4,000), and the log shows how many fallbacks moved compared with before.
-- [ ] Default worlds still place no fallback and plan nothing (existing assertion).
-- [ ] `./gradlew build` passes.
+- [x] For a structure with several host anchors, a chunk at ring r of the second anchor is chosen over any chunk
+      at ring r+1 or further of the first anchor. (`AnchoredStructurePlacement.chunksOutward` walks ring r of every
+      host anchor before ring r+1 and skips chunks an earlier step visited, so the disc is covered once.)
+- [x] A unit test covers the interleaved order on a small synthetic case (two anchors, the first with no valid
+      chunk within a few rings). (`AnchoredStructurePlacementTest`: interleaved order, and every chunk visited once.)
+- [x] `GuaranteeGameTest.structuresInsideRadius` still passes (all 19 structures on seeds 1–50 at 3,000 and
+      4,000), and the log shows how many fallbacks moved compared with before. (Passes; comparing the `[STR-1]` lines
+      before and after, 6 of 243 fallbacks moved: 4 jungle temples, 1 badlands mineshaft, 1 igloo.)
+- [x] Default worlds still place no fallback and plan nothing (existing assertion). (Same game test, passes.)
+- [x] `./gradlew build` passes. (Unit tests and all 7 game tests.)
 
 ## Notes
 
