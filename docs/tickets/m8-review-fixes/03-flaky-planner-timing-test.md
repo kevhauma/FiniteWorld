@@ -27,9 +27,11 @@ run.
 
 ## Acceptance criteria
 
-- [ ] `./gradlew build` does not fail on timing alone.
-- [ ] The planner's measured time is still visible somewhere (test output, a tagged test, or the game-test log).
-- [ ] `./gradlew build` passes.
+- [x] `./gradlew build` does not fail on timing alone. (`AnchorPlannerTest.planningAtRadius4000HasNotRegressed`
+      bounds the best of 3 plans at 1,000 ms, 10× the ANC-1 budget; it measured 47 ms here.)
+- [x] The planner's measured time is still visible somewhere (test output, a tagged test, or the game-test log).
+      (The test prints it to the test report's standard output; the game-test log still has the `Planned …` lines.)
+- [x] `./gradlew build` passes. (Unit tests and all 8 game tests.)
 
 ## Notes
 

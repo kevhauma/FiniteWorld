@@ -15,7 +15,7 @@ validated, and the code reads plainly.
 | --- | --- | --- | --- | --- |
 | 01 | [Search every host anchor before widening the fallback search](01-fallback-search-all-anchors.md) | Structures | Medium | done |
 | 02 | [Make the anchor-planning error handler reachable](02-dead-catch-anchor-planning.md) | Anchors | Low | done |
-| 03 | [Stop the planner timing test from gating the build](03-flaky-planner-timing-test.md) | Build/CI | Low | open |
+| 03 | [Stop the planner timing test from gating the build](03-flaky-planner-timing-test.md) | Build/CI | Low | done |
 | 04 | [Respect vanilla exclusion zones in the fallback](04-fallback-exclusion-zones.md) | Structures | Low | open |
 | 05 | [Validate the anchor plan's band against its radius](05-validate-anchor-plan-band.md) | Anchors | Low | open |
 | 06 | [Don't crash the Customize screen on a replaced preset](06-customize-screen-orelsethrow.md) | Radius UI | Low | open |
