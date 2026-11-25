@@ -21,9 +21,11 @@ import net.minecraft.world.level.levelgen.presets.WorldPreset;
 /** The Finite preset's Customize screen: one radius field, Done only for a whole number in [MIN, MAX]. */
 public class FiniteRadiusScreen extends Screen {
 	public static final Optional<ResourceKey<WorldPreset>> PRESET = Optional.of(ResourceKey.create(Registries.WORLD_PRESET, FiniteWorld.id("finite")));
-	public static final PresetEditor EDITOR = (parent, settings) -> new FiniteRadiusScreen(parent,
-		FiniteRadius.of(settings.selectedDimensions()).orElseThrow().intValue(),
-		radius -> parent.getUiState().updateDimensions((registries, dimensions) -> FiniteRadius.withRadius(dimensions, registries, radius)));
+	// A datapack can replace the preset's overworld with one that has no radius; Customize then stays on the Create World screen.
+	public static final PresetEditor EDITOR = (parent, settings) -> FiniteRadius.of(settings.selectedDimensions())
+		.<Screen>map(radius -> new FiniteRadiusScreen(parent, radius.intValue(),
+			chosen -> parent.getUiState().updateDimensions((registries, dimensions) -> FiniteRadius.withRadius(dimensions, registries, chosen))))
+		.orElse(parent);
 
 	private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
 	private final Screen parent;

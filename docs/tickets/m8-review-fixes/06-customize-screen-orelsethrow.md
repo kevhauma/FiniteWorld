@@ -29,11 +29,14 @@ has no `finiteworld:edge_cap` final density, the client crashes.
 ## Acceptance criteria
 
 - [ ] With the Finite preset's overworld replaced by a non-Finite generator, clicking Customize doesn't crash.
+      (Code: `FiniteRadiusScreen.EDITOR` maps the optional radius and returns the Create World screen itself when it is
+      empty, so nothing throws. Not yet checked in game with such a datapack.)
 - [ ] With the shipped preset, the screen still opens with the current radius and Done still rewrites it.
-- [ ] Client-only code stays in `src/client/`.
-- [ ] `./gradlew build` passes.
+      (Same code path as before when a radius is present; left for the in-game check below.)
+- [x] Client-only code stays in `src/client/`. (The only change is in `FiniteRadiusScreen`.)
+- [x] `./gradlew build` passes. (Unit tests and all 9 game tests.)
 - [ ] Verified in game (`./gradlew runClient`): Create World → Finite → Customize opens, Done at 5,000 creates a
-      5,000 world.
+      5,000 world. (Open: needs a person at the game window.)
 
 ## Notes
 
