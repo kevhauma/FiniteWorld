@@ -26,11 +26,13 @@ The planner refinement and the guarantee game test pass block columns around as 
 
 ## Acceptance criteria
 
-- [ ] No `int[]` used as a point in `AnchorPlanner` or `GuaranteeGameTest`.
-- [ ] Unit tests pass and plans are unchanged (`sameClimateGivesTheSamePlan`, same plan hashes in the game-test
-      log for seed 12345).
-- [ ] Game tests pass (`runGameTest`).
-- [ ] `./gradlew build` passes.
+- [x] No `int[]` used as a point in `AnchorPlanner` or `GuaranteeGameTest`. (`AnchorPlanner.Column(x, z)` for the
+      refinement candidates; `GuaranteeGameTest.Point(x, z)` and `Floor(point, y)`. The remaining `int[]` in the
+      planner are index lists, not points.)
+- [x] Unit tests pass and plans are unchanged (`sameClimateGivesTheSamePlan`, same plan hashes in the game-test
+      log for seed 12345). (Seed 12345 plan hash 1725760216, as before.)
+- [x] Game tests pass (`runGameTest`). (All 10.)
+- [x] `./gradlew build` passes.
 
 ## Notes
 

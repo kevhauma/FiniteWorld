@@ -82,7 +82,7 @@ public class GuaranteeGameTest {
 	private static final List<Integer> CAVE_YS = IntStream.iterate(-56, y -> y <= 56, y -> y + 16).boxed().toList();
 	private static final float SPAWN_RADIUS = 3000.0F;
 	private static final int SPAWN_MAX_DISTANCE = 500;
-	private static final List<int[]> SPAWN_SPIRAL = spawnSpiral();
+	private static final List<Point> SPAWN_SPIRAL = spawnSpiral();
 	private static final List<Long> STRUCTURE_SEEDS = LongStream.rangeClosed(1, 50).boxed().toList();
 	private static final List<Float> STRUCTURE_RADII = List.of(3000.0F, 4000.0F);
 	// The design doc's structure checklist.
@@ -113,11 +113,12 @@ public class GuaranteeGameTest {
 				NoiseGeneratorSettings settings = FiniteRadius.withRadius(preset.generatorSettings().value(), run.radius());
 				NoiseBasedChunkGenerator generator = new NoiseBasedChunkGenerator(biomes, Holder.direct(settings));
 				RandomState random = RandomState.create(registries.lookupOrThrow(Registries.NOISE), run.seed(), settings);
-				List<int[]> edge = grid(EDGE_STEP, run.radius(), run.radius() + EDGE_DEPTH).toList();
+				List<Point> edge = grid(EDGE_STEP, run.radius(), run.radius() + EDGE_DEPTH).toList();
 				List<String> land = edge.stream()
-					.map(p -> new int[] {p[0], p[1], generator.getBaseHeight(p[0], p[1], Heightmap.Types.OCEAN_FLOOR_WG, heights, random)})
-					.filter(p -> p[2] > settings.seaLevel())
-					.map(p -> "(" + p[0] + ", " + p[1] + ") floor y=" + p[2] + " C=" + random.sampleBlockValueUncached(settings.noiseRouter().continents(), p[0], 0, p[1]))
+					.map(p -> new Floor(p, generator.getBaseHeight(p.x(), p.z(), Heightmap.Types.OCEAN_FLOOR_WG, heights, random)))
+					.filter(f -> f.y() > settings.seaLevel())
+					.map(f -> "(" + f.point().x() + ", " + f.point().z() + ") floor y=" + f.y() + " C="
+						+ random.sampleBlockValueUncached(settings.noiseRouter().continents(), f.point().x(), 0, f.point().z()))
 					.toList();
 				AnchorPlan plan = planOf(random, settings);
 				return new Result(run.seed(), run.radius(), land, edge.size(), biomesInside(biomes, random, run.radius(), plan), plan, landShares(biomes, random, run.radius()));
@@ -326,7 +327,7 @@ public class GuaranteeGameTest {
 		RandomState random = RandomState.create(registries.lookupOrThrow(Registries.NOISE), seed, generator.generatorSettings().value());
 		ChunkPos origin = generator.getOrigin(random);
 		return SPAWN_SPIRAL.stream()
-			.map(offset -> new ChunkPos(origin.x() + offset[0], origin.z() + offset[1]))
+			.map(offset -> new ChunkPos(origin.x() + offset.x(), origin.z() + offset.z()))
 			.flatMap(chunk -> IntStream.rangeClosed(chunk.getMinBlockX(), chunk.getMaxBlockX()).boxed()
 				.flatMap(x -> IntStream.rangeClosed(chunk.getMinBlockZ(), chunk.getMaxBlockZ()).mapToObj(z -> new BlockPos(x, 0, z))))
 			.map(p -> p.atY(generator.getBaseHeight(p.getX(), p.getZ(), Heightmap.Types.OCEAN_FLOOR_WG, heights, random)))
@@ -337,15 +338,15 @@ public class GuaranteeGameTest {
 	}
 
 	/** The chunk offsets MinecraftServer.setInitialSpawn visits, in its order. */
-	private static List<int[]> spawnSpiral() {
-		List<int[]> offsets = new ArrayList<>();
+	private static List<Point> spawnSpiral() {
+		List<Point> offsets = new ArrayList<>();
 		int x = 0;
 		int z = 0;
 		int dx = 0;
 		int dz = -1;
 		for (int i = 0; i < 11 * 11; i++) {
 			if (x >= -5 && x <= 5 && z >= -5 && z <= 5) {
-				offsets.add(new int[] {x, z});
+				offsets.add(new Point(x, z));
 			}
 			if (x == z || x < 0 && x == -z || x > 0 && x == 1 - z) {
 				int turn = dx;
@@ -374,9 +375,9 @@ public class GuaranteeGameTest {
 	/** Every biome the climate picks at the anchor centres and on a grid inside the radius, at the surface and at cave depths. */
 	private static Set<Holder<Biome>> biomesInside(MultiNoiseBiomeSource biomes, RandomState random, float radius, AnchorPlan plan) {
 		Climate.Sampler climate = random.createClimateSampler(SamplerContext.EMPTY_UNCACHED);
-		return Stream.concat(plan.anchors().stream().map(a -> new int[] {a.x(), a.z()}), grid(BIOME_STEP, 0, radius - 1)).<Holder<Biome>>mapMulti((p, found) -> {
-			int x = p[0];
-			int z = p[1];
+		return Stream.concat(plan.anchors().stream().map(a -> new Point(a.x(), a.z())), grid(BIOME_STEP, 0, radius - 1)).<Holder<Biome>>mapMulti((p, found) -> {
+			int x = p.x();
+			int z = p.z();
 			// All climate noises but depth are 2D (y_scale 0), so one sample serves every height.
 			float t = climate.temperature().sampleValue(x, 0, z);
 			float h = climate.humidity().sampleValue(x, 0, z);
@@ -394,9 +395,9 @@ public class GuaranteeGameTest {
 		Climate.Sampler climate = random.createClimateSampler(SamplerContext.EMPTY_UNCACHED);
 		List<Column> land = grid(BIOME_STEP, 0, radius - 1)
 			.map(p -> {
-				float t = climate.temperature().sampleValue(p[0], 0, p[1]);
-				return new Column(t, biomes.getNoiseBiome(Climate.target(t, climate.humidity().sampleValue(p[0], 0, p[1]), climate.continentalness().sampleValue(p[0], 0, p[1]),
-					climate.erosion().sampleValue(p[0], 0, p[1]), 0.0F, climate.weirdness().sampleValue(p[0], 0, p[1]))));
+				float t = climate.temperature().sampleValue(p.x(), 0, p.z());
+				return new Column(t, biomes.getNoiseBiome(Climate.target(t, climate.humidity().sampleValue(p.x(), 0, p.z()), climate.continentalness().sampleValue(p.x(), 0, p.z()),
+					climate.erosion().sampleValue(p.x(), 0, p.z()), 0.0F, climate.weirdness().sampleValue(p.x(), 0, p.z()))));
 			})
 			.filter(c -> !c.biome().is(BiomeTags.IS_OCEAN))
 			.toList();
@@ -423,12 +424,12 @@ public class GuaranteeGameTest {
 	}
 
 	/** Grid points (x, z) whose distance from the origin lies in [min, max]. */
-	private static Stream<int[]> grid(int step, double min, double max) {
+	private static Stream<Point> grid(int step, double min, double max) {
 		int extent = (int) max / step * step;
 		return IntStream.iterate(-extent, x -> x <= extent, x -> x + step).boxed()
-			.flatMap(x -> IntStream.iterate(-extent, z -> z <= extent, z -> z + step).mapToObj(z -> new int[] {x, z}))
+			.flatMap(x -> IntStream.iterate(-extent, z -> z <= extent, z -> z + step).mapToObj(z -> new Point(x, z)))
 			.filter(p -> {
-				double distance = Math.sqrt((double) p[0] * p[0] + (double) p[1] * p[1]);
+				double distance = Math.sqrt((double) p.x() * p.x() + (double) p.z() * p.z());
 				return distance >= min && distance <= max;
 			});
 	}
@@ -451,6 +452,14 @@ public class GuaranteeGameTest {
 	}
 
 	private record Column(float temperature, Holder<Biome> biome) {
+	}
+
+	/** A block column (x, z). */
+	private record Point(int x, int z) {
+	}
+
+	/** A column's ocean-floor height. */
+	private record Floor(Point point, int y) {
 	}
 
 	private record Shares(double frozen, double hot, double desert) {

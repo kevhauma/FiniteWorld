@@ -150,9 +150,9 @@ public final class AnchorPlanner {
 			int fine = grid.step() / 4;
 			Spot centre = this.spot(grid.x(coarse), grid.z(coarse), grid.values()[coarse]);
 			Spot best = Stream.concat(Stream.of(centre), IntStream.rangeClosed(-2, 2).boxed()
-					.flatMap(dx -> IntStream.rangeClosed(-2, 2).filter(dz -> dx != 0 || dz != 0).mapToObj(dz -> new int[] {centre.x() + dx * fine, centre.z() + dz * fine}))
-					.filter(p -> fits(p[0], p[1], maxCentre, placed))
-					.map(p -> this.spot(p[0], p[1], sample(climate, p[0], p[1]))))
+					.flatMap(dx -> IntStream.rangeClosed(-2, 2).filter(dz -> dx != 0 || dz != 0).mapToObj(dz -> new Column(centre.x() + dx * fine, centre.z() + dz * fine)))
+					.filter(c -> fits(c.x(), c.z(), maxCentre, placed))
+					.map(c -> this.spot(c.x(), c.z(), sample(climate, c.x(), c.z()))))
 				.min(Comparator.comparingDouble(Spot::distance))
 				.orElseThrow();
 			float[] core = this.cores[best.nearest()];
@@ -169,6 +169,10 @@ public final class AnchorPlanner {
 	}
 
 	private record Spot(int x, int z, float[] climate, int nearest, float distance) {
+	}
+
+	/** A block column. */
+	private record Column(int x, int z) {
 	}
 
 	/**
