@@ -21,7 +21,7 @@ validated, and the code reads plainly.
 | 06 | [Don't crash the Customize screen on a replaced preset](06-customize-screen-orelsethrow.md) | Radius UI | Low | open: in-game check |
 | 07 | [Build the spawn ramp from vanilla density functions](07-spawn-distance-vanilla-ramp.md) | Spawn | Low | done |
 | 08 | [Quiet the per-world INFO logs](08-quiet-info-logs.md) | Code | Low | done |
-| 09 | [Replace array-filling lambdas with loops](09-array-filling-lambdas.md) | Readability | Low | open |
+| 09 | [Replace array-filling lambdas with loops](09-array-filling-lambdas.md) | Readability | Low | done |
 | 10 | [Replace `int[]` points with a record](10-int-array-points.md) | Readability | Low | open |
 | 11 | [Readability nits](11-readability-nits.md) | Readability | Low | open |
 | 12 | [Remove leftovers](12-remove-leftovers.md) | Cleanup | Low | open |

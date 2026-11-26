@@ -124,7 +124,9 @@ public final class AnchorPlanner {
 				.toArray(float[][]::new);
 			float[] distance = distances(cores, grid);
 			float[] score = new float[distance.length];
-			IntStream.range(0, score.length).forEach(i -> score[i] = distance[i] + mean(distance, grid.neighbours()[i], distance[i]));
+			for (int i = 0; i < score.length; i++) {
+				score[i] = distance[i] + mean(distance, grid.neighbours()[i], distance[i]);
+			}
 			float best = (float) IntStream.range(0, score.length)
 				.filter(i -> !Float.isNaN(score[i]) && inside(grid.x(i), grid.z(i), maxCentre))
 				.mapToDouble(i -> score[i])
@@ -232,7 +234,9 @@ public final class AnchorPlanner {
 
 	private static float[] toArray(List<Float> values) {
 		float[] array = new float[values.size()];
-		IntStream.range(0, array.length).forEach(i -> array[i] = values.get(i));
+		for (int i = 0; i < array.length; i++) {
+			array[i] = values.get(i);
+		}
 		return array;
 	}
 
@@ -292,7 +296,11 @@ public final class AnchorPlanner {
 				distance[i] = Math.min(distance[i], sum[i]);
 			}
 		}
-		IntStream.range(0, n).filter(i -> grid.values()[i] == null).forEach(i -> distance[i] = Float.NaN);
+		for (int i = 0; i < n; i++) {
+			if (grid.values()[i] == null) {
+				distance[i] = Float.NaN;
+			}
+		}
 		return distance;
 	}
 

@@ -53,7 +53,9 @@ final class AnchorField {
 			.mapToObj(i -> active.stream().filter(a -> touches(a, minCellX + i % cellsX, minCellZ + i / cellsX)).toList())
 			.toList();
 		int[] start = new int[cells.size() + 1];
-		IntStream.range(0, cells.size()).forEach(i -> start[i + 1] = start[i] + cells.get(i).size());
+		for (int i = 0; i < cells.size(); i++) {
+			start[i + 1] = start[i] + cells.get(i).size();
+		}
 		List<Anchor> entries = cells.stream().flatMap(List::stream).toList();
 		return new AnchorField(minCellX, minCellZ, cellsX, cellsZ, start,
 			floats(entries, a -> a.x()), floats(entries, a -> a.z()), floats(entries, a -> (float) a.radius() * a.radius()), floats(entries, a -> a.offset().get(parameter)));
@@ -100,7 +102,9 @@ final class AnchorField {
 
 	private static float[] floats(List<Anchor> anchors, ToDoubleFunction<Anchor> value) {
 		float[] array = new float[anchors.size()];
-		IntStream.range(0, array.length).forEach(i -> array[i] = (float) value.applyAsDouble(anchors.get(i)));
+		for (int i = 0; i < array.length; i++) {
+			array[i] = (float) value.applyAsDouble(anchors.get(i));
+		}
 		return array;
 	}
 }

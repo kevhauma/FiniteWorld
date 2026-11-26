@@ -25,9 +25,10 @@ loop disguised as a stream; a `for` loop states it directly. Java has no `Arrays
 
 ## Acceptance criteria
 
-- [ ] No `forEach` lambda in `src/main` writes into an array.
-- [ ] `AnchorFieldTest` and `AnchorPlannerTest` pass unchanged, including `sameClimateGivesTheSamePlan`.
-- [ ] `./gradlew build` passes.
+- [x] No `forEach` lambda in `src/main` writes into an array. (The five are `for` loops; grep finds none left.)
+- [x] `AnchorFieldTest` and `AnchorPlannerTest` pass unchanged, including `sameClimateGivesTheSamePlan`. (Pass; the
+      game-test plan hash for seed 12345 is still 1725760216.)
+- [x] `./gradlew build` passes. (Unit tests and all 10 game tests.)
 
 ## Notes
 
