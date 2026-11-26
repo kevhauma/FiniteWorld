@@ -2,11 +2,13 @@ package io.github.kevhauma.finiteworld.edge;
 
 import io.github.kevhauma.finiteworld.FiniteRadius;
 
+import java.util.Optional;
+
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Optional;
+
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Interval;
 import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;

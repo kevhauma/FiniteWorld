@@ -3,9 +3,10 @@ package io.github.kevhauma.finiteworld;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.OptionalInt;
+
 import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.JsonOps;
-import java.util.OptionalInt;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 

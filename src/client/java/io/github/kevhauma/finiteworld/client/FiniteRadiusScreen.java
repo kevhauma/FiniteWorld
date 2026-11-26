@@ -5,6 +5,7 @@ import io.github.kevhauma.finiteworld.FiniteWorld;
 
 import java.util.Optional;
 import java.util.function.IntConsumer;
+
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.StringWidget;

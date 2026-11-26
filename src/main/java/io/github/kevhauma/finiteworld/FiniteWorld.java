@@ -6,14 +6,14 @@ import io.github.kevhauma.finiteworld.edge.EdgeCapDensityFunction;
 import io.github.kevhauma.finiteworld.edge.EdgeDensityFunction;
 import io.github.kevhauma.finiteworld.structure.AnchoredStructurePlacement;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class FiniteWorld implements ModInitializer {
 	public static final String MOD_ID = "finiteworld";

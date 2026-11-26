@@ -22,8 +22,8 @@ import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.placement.ConcentricRingsStructurePlacement;
-import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
+import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 /**
@@ -31,7 +31,8 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
  * the set's weighted pick (ChunkGenerator.createStructures), each pick checked as {@code /locate} does
  * (Structure.findValidGenerationPoint). Used by the fallback (STR-2) and the guarantee test (STR-1).
  */
-public record StructureStarts(ChunkGeneratorStructureState state, ChunkGenerator generator, RegistryAccess registries, StructureTemplateManager templates, LevelHeightAccessor heights) {
+public record StructureStarts(ChunkGeneratorStructureState state, ChunkGenerator generator,
+	RegistryAccess registries, StructureTemplateManager templates, LevelHeightAccessor heights) {
 	/** The set's start chunks whose centre is inside the radius: placement candidates that pass its frequency and exclusion checks. */
 	public Stream<ChunkPos> startChunks(StructureSet set, float radius) {
 		Stream<ChunkPos> candidates = switch (set.placement()) {
@@ -41,7 +42,8 @@ public record StructureStarts(ChunkGeneratorStructureState state, ChunkGenerator
 			case RandomSpreadStructurePlacement spread -> {
 				int regions = (int) Math.ceil(radius / 16.0 / spread.spacing());
 				yield IntStream.rangeClosed(-regions, regions).boxed()
-					.flatMap(gx -> IntStream.rangeClosed(-regions, regions).mapToObj(gz -> spread.getPotentialStructureChunk(this.state.getLevelSeed(), gx * spread.spacing(), gz * spread.spacing())));
+					.flatMap(gx -> IntStream.rangeClosed(-regions, regions)
+						.mapToObj(gz -> spread.getPotentialStructureChunk(this.state.getLevelSeed(), gx * spread.spacing(), gz * spread.spacing())));
 			}
 			default -> Stream.empty();
 		};

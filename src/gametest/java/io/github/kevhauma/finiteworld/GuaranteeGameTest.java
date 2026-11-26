@@ -1,9 +1,9 @@
 package io.github.kevhauma.finiteworld;
 
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanFunction;
+import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
 import io.github.kevhauma.finiteworld.edge.EdgeDensityFunction;
 import io.github.kevhauma.finiteworld.edge.EdgeFalloff;
-import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
 import io.github.kevhauma.finiteworld.structure.AnchoredStructurePlacement;
 import io.github.kevhauma.finiteworld.structure.StructureStarts;
 
@@ -38,12 +38,12 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.StructureTags;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSource;
+import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -51,14 +51,14 @@ import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.WorldDimensions;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
+import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructureSets;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
-import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
-import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
-import net.minecraft.world.level.levelgen.presets.WorldPreset;
 
 /**
  * TEST-1: builds the Finite world preset's generator for fixed seeds and radii and checks the
@@ -121,7 +121,8 @@ public class GuaranteeGameTest {
 						+ random.sampleBlockValueUncached(settings.noiseRouter().continents(), f.point().x(), 0, f.point().z()))
 					.toList();
 				AnchorPlan plan = planOf(random, settings);
-				return new Result(run.seed(), run.radius(), land, edge.size(), biomesInside(biomes, random, run.radius(), plan), plan, landShares(biomes, random, run.radius()));
+				return new Result(run.seed(), run.radius(), land, edge.size(), biomesInside(biomes, random, run.radius(), plan),
+					plan, landShares(biomes, random, run.radius()));
 			})
 			.toList();
 
@@ -135,7 +136,8 @@ public class GuaranteeGameTest {
 			r.seed(), (int) r.radius(), percent(r.shares().frozen()), percent(r.shares().hot()), percent(r.shares().desert())));
 		RADII.forEach(radius -> {
 			List<Shares> shares = results.stream().filter(r -> r.radius() == radius).map(Result::shares).toList();
-			FiniteWorld.LOGGER.info("[CLIMATE] radius {} over {} seeds: land frozen {}, hot {}, desert {}; frozen over a third of the land in {} seeds, desert under 2% in {}",
+			FiniteWorld.LOGGER.info("[CLIMATE] radius {} over {} seeds: land frozen {}, hot {}, desert {}; "
+				+ "frozen over a third of the land in {} seeds, desert under 2% in {}",
 				radius.intValue(), shares.size(), spread(shares, Shares::frozen), spread(shares, Shares::hot), spread(shares, Shares::desert),
 				shares.stream().filter(s -> s.frozen() > 1.0 / 3).count(), shares.stream().filter(s -> s.desert() < 0.02).count());
 		});
@@ -149,7 +151,8 @@ public class GuaranteeGameTest {
 		List<String> uncovered = results.stream()
 			.filter(r -> !missing(checklist, r).isEmpty())
 			.map(r -> "seed " + r.seed() + " radius " + (int) r.radius() + " missing " + missing(checklist, r).stream()
-				.map(biome -> r.plan().anchors().stream().filter(a -> a.biome().equals(biome.getRegisteredName())).findFirst().map(Object::toString).orElse(biome.getRegisteredName()))
+				.map(biome -> r.plan().anchors().stream().filter(a -> a.biome().equals(biome.getRegisteredName()))
+					.findFirst().map(Object::toString).orElse(biome.getRegisteredName()))
 				.toList())
 			.toList();
 		helper.assertTrue(uncovered.isEmpty(), Component.literal("Checklist biomes missing inside the radius: " + String.join("; ", uncovered)));
@@ -165,7 +168,8 @@ public class GuaranteeGameTest {
 		NoiseGeneratorSettings settings = FiniteRadius.withRadius(preset.generatorSettings().value(), SPAWN_RADIUS);
 		NoiseBasedChunkGenerator generator = new NoiseBasedChunkGenerator(preset.getBiomeSource(), Holder.direct(settings));
 		// The Default world's generator, logged beside each Finite spawn for comparison with a dedicated server.
-		NoiseBasedChunkGenerator vanilla = new NoiseBasedChunkGenerator(preset.getBiomeSource(), registries.lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(NoiseGeneratorSettings.OVERWORLD));
+		NoiseBasedChunkGenerator vanilla = new NoiseBasedChunkGenerator(preset.getBiomeSource(),
+			registries.lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(NoiseGeneratorSettings.OVERWORLD));
 
 		List<String> failed = SEEDS.parallelStream()
 			.map(seed -> {
@@ -189,7 +193,8 @@ public class GuaranteeGameTest {
 	@GameTest
 	public void spawnDistanceMatchesTheOldRamp(GameTestHelper helper) {
 		RegistryAccess registries = helper.getLevel().registryAccess();
-		DensityFunction ramp = registries.lookupOrThrow(Registries.DENSITY_FUNCTION).getValueOrThrow(ResourceKey.create(Registries.DENSITY_FUNCTION, FiniteWorld.id("spawn_distance")));
+		DensityFunction ramp = registries.lookupOrThrow(Registries.DENSITY_FUNCTION)
+			.getValueOrThrow(ResourceKey.create(Registries.DENSITY_FUNCTION, FiniteWorld.id("spawn_distance")));
 		NoiseGeneratorSettings settings = ((NoiseBasedChunkGenerator) finiteOverworld(registries).generator()).generatorSettings().value();
 		RandomState random = RandomState.create(registries.lookupOrThrow(Registries.NOISE), 1L, settings);
 		// (0.6 d, 0.8 d) lies d blocks from the origin.
@@ -248,8 +253,10 @@ public class GuaranteeGameTest {
 			required.stream().filter(s -> !result.vanilla().containsKey(s)).map(Holder::getRegisteredName).toList(),
 			names(result.fallback()),
 			names(merge(result.vanilla(), result.fallback()))));
-		STRUCTURE_RADII.forEach(radius -> FiniteWorld.LOGGER.info("[STR-1] radius {}: vanilla misses per structure over {} seeds {}", radius.intValue(), STRUCTURE_SEEDS.size(),
-			required.stream().map(s -> s.getRegisteredName() + "=" + results.stream().filter(r -> r.radius() == radius && !r.vanilla().containsKey(s)).count()).toList()));
+		STRUCTURE_RADII.forEach(radius -> FiniteWorld.LOGGER.info("[STR-1] radius {}: vanilla misses per structure over {} seeds {}",
+			radius.intValue(), STRUCTURE_SEEDS.size(), required.stream()
+				.map(s -> s.getRegisteredName() + "=" + results.stream().filter(r -> r.radius() == radius && !r.vanilla().containsKey(s)).count())
+				.toList()));
 
 		List<String> missing = results.stream()
 			.filter(r -> !merge(r.vanilla(), r.fallback()).keySet().containsAll(required))
@@ -258,19 +265,23 @@ public class GuaranteeGameTest {
 			.toList();
 		helper.assertTrue(missing.isEmpty(), Component.literal("Checklist structures missing inside the radius: " + String.join("; ", missing)));
 		List<String> needless = results.stream()
-			.flatMap(r -> r.fallback().keySet().stream().filter(r.vanilla()::containsKey).map(s -> "seed " + r.seed() + " radius " + (int) r.radius() + " " + s.getRegisteredName()))
+			.flatMap(r -> r.fallback().keySet().stream().filter(r.vanilla()::containsKey)
+				.map(s -> "seed " + r.seed() + " radius " + (int) r.radius() + " " + s.getRegisteredName()))
 			.toList();
 		helper.assertTrue(needless.isEmpty(), Component.literal("Fallback placed although vanilla starts one: " + needless));
 		List<String> raided = results.stream()
-			.filter(r -> r.fallback().containsKey(outpost) && r.villages().stream().anyMatch(v -> v.getChessboardDistance(r.fallback().get(outpost)) <= OUTPOST_VILLAGE_GAP))
+			.filter(r -> r.fallback().containsKey(outpost)
+				&& r.villages().stream().anyMatch(v -> v.getChessboardDistance(r.fallback().get(outpost)) <= OUTPOST_VILLAGE_GAP))
 			.map(r -> "seed " + r.seed() + " radius " + (int) r.radius() + " outpost at chunk " + r.fallback().get(outpost))
 			.toList();
-		FiniteWorld.LOGGER.info("[STR-2] fallback outposts: {}, within {} chunks of a village: {}", results.stream().filter(r -> r.fallback().containsKey(outpost)).count(), OUTPOST_VILLAGE_GAP, raided);
+		FiniteWorld.LOGGER.info("[STR-2] fallback outposts: {}, within {} chunks of a village: {}",
+			results.stream().filter(r -> r.fallback().containsKey(outpost)).count(), OUTPOST_VILLAGE_GAP, raided);
 		helper.assertTrue(raided.isEmpty(), Component.literal("Fallback outpost within " + OUTPOST_VILLAGE_GAP + " chunks of a village: " + raided));
 
 		// Default worlds: the anchored sets are global data, but without a plan they place nothing and plan nothing.
 		long plansBefore = AnchorPlanFunction.plansComputed();
-		NoiseBasedChunkGenerator vanilla = new NoiseBasedChunkGenerator(preset.getBiomeSource(), registries.lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(NoiseGeneratorSettings.OVERWORLD));
+		NoiseBasedChunkGenerator vanilla = new NoiseBasedChunkGenerator(preset.getBiomeSource(),
+			registries.lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(NoiseGeneratorSettings.OVERWORLD));
 		StructureStarts defaults = structureStarts(vanilla, registries, templates, heights, STRUCTURE_SEEDS.getFirst());
 		Map<Holder<Structure>, ChunkPos> defaultFallbacks = startsInside(defaults, Float.MAX_VALUE, true);
 		helper.assertTrue(defaultFallbacks.isEmpty() && AnchorPlanFunction.plansComputed() == plansBefore,
@@ -279,7 +290,8 @@ public class GuaranteeGameTest {
 	}
 
 	/** A world's structure state, registered with the anchored fallback as the ChunkMap mixin does for a real world. */
-	private static StructureStarts structureStarts(NoiseBasedChunkGenerator generator, RegistryAccess registries, StructureTemplateManager templates, LevelHeightAccessor heights, long seed) {
+	private static StructureStarts structureStarts(NoiseBasedChunkGenerator generator, RegistryAccess registries,
+		StructureTemplateManager templates, LevelHeightAccessor heights, long seed) {
 		RandomState random = RandomState.create(registries.lookupOrThrow(Registries.NOISE), seed, generator.generatorSettings().value());
 		ChunkGeneratorStructureState state = generator.createState(registries.lookupOrThrow(Registries.STRUCTURE_SET), random, seed);
 		AnchoredStructurePlacement.register(state, generator, registries, templates, heights);
@@ -301,7 +313,8 @@ public class GuaranteeGameTest {
 	}
 
 	private static Map<Holder<Structure>, ChunkPos> merge(Map<Holder<Structure>, ChunkPos> a, Map<Holder<Structure>, ChunkPos> b) {
-		return Stream.concat(a.entrySet().stream(), b.entrySet().stream()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, GuaranteeGameTest::nearer));
+		return Stream.concat(a.entrySet().stream(), b.entrySet().stream())
+			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, GuaranteeGameTest::nearer));
 	}
 
 	private static ChunkPos nearer(ChunkPos a, ChunkPos b) {
@@ -334,7 +347,8 @@ public class GuaranteeGameTest {
 			.filter(p -> p.getY() == generator.getBaseHeight(p.getX(), p.getZ(), Heightmap.Types.WORLD_SURFACE_WG, heights, random))
 			.findFirst()
 			// Vanilla falls back to the origin chunk's centre at y 64; the surface height here makes the land check catch it.
-			.orElseGet(() -> origin.getWorldPosition().offset(8, generator.getBaseHeight(origin.getMiddleBlockX(), origin.getMiddleBlockZ(), Heightmap.Types.WORLD_SURFACE_WG, heights, random), 8));
+			.orElseGet(() -> origin.getWorldPosition().offset(8, generator.getBaseHeight(origin.getMiddleBlockX(), origin.getMiddleBlockZ(),
+				Heightmap.Types.WORLD_SURFACE_WG, heights, random), 8));
 	}
 
 	/** The chunk offsets MinecraftServer.setInitialSpawn visits, in its order. */
@@ -396,12 +410,14 @@ public class GuaranteeGameTest {
 		List<Column> land = grid(BIOME_STEP, 0, radius - 1)
 			.map(p -> {
 				float t = climate.temperature().sampleValue(p.x(), 0, p.z());
-				return new Column(t, biomes.getNoiseBiome(Climate.target(t, climate.humidity().sampleValue(p.x(), 0, p.z()), climate.continentalness().sampleValue(p.x(), 0, p.z()),
+				return new Column(t, biomes.getNoiseBiome(Climate.target(t, climate.humidity().sampleValue(p.x(), 0, p.z()),
+					climate.continentalness().sampleValue(p.x(), 0, p.z()),
 					climate.erosion().sampleValue(p.x(), 0, p.z()), 0.0F, climate.weirdness().sampleValue(p.x(), 0, p.z()))));
 			})
 			.filter(c -> !c.biome().is(BiomeTags.IS_OCEAN))
 			.toList();
-		return new Shares(share(land, c -> c.temperature() < FROZEN_BELOW), share(land, c -> c.temperature() > HOT_ABOVE), share(land, c -> c.biome().is(Biomes.DESERT)));
+		return new Shares(share(land, c -> c.temperature() < FROZEN_BELOW), share(land, c -> c.temperature() > HOT_ABOVE),
+			share(land, c -> c.biome().is(Biomes.DESERT)));
 	}
 
 	private static double share(List<Column> land, Predicate<Column> test) {
@@ -445,7 +461,8 @@ public class GuaranteeGameTest {
 	private record Run(long seed, float radius) {
 	}
 
-	private record StructureResult(long seed, float radius, Map<Holder<Structure>, ChunkPos> vanilla, Map<Holder<Structure>, ChunkPos> fallback, List<ChunkPos> villages) {
+	private record StructureResult(long seed, float radius, Map<Holder<Structure>, ChunkPos> vanilla,
+		Map<Holder<Structure>, ChunkPos> fallback, List<ChunkPos> villages) {
 	}
 
 	private record Result(long seed, float radius, List<String> landPastRadius, int edgeColumns, Set<Holder<Biome>> found, AnchorPlan plan, Shares shares) {

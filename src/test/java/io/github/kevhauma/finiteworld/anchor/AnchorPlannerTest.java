@@ -9,10 +9,12 @@ import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.Biome;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.Box;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.Range;
+
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
 
 class AnchorPlannerTest {
@@ -28,7 +30,8 @@ class AnchorPlannerTest {
 		(x, z) -> (float) Math.cos(x / 500.0 + z / 800.0),
 		(x, z) -> (float) Math.sin((x - z) / 600.0)
 	);
-	private static final List<Range> BANDS = List.of(new Range(-OPEN, -0.6F), new Range(-0.6F, -0.2F), new Range(-0.2F, 0.2F), new Range(0.2F, 0.6F), new Range(0.6F, OPEN));
+	private static final List<Range> BANDS = List.of(new Range(-OPEN, -0.6F), new Range(-0.6F, -0.2F), new Range(-0.2F, 0.2F),
+		new Range(0.2F, 0.6F), new Range(0.6F, OPEN));
 	private static final List<Range> HALVES = List.of(new Range(-OPEN, 0.0F), new Range(0.0F, OPEN));
 	private static final Range ANY = new Range(-OPEN, OPEN);
 	// Mushroom-like: continentalness below anything the synthetic climate reaches.
@@ -36,7 +39,8 @@ class AnchorPlannerTest {
 	// 5 temperature x 5 humidity x 2 weirdness biomes plus the mushroom: 51 biomes. Each of the 50 has 20 boxes that do not
 	// touch (every other continents and erosion slice), so they stay apart after merging: 1001 boxes, near vanilla's 849 merged.
 	private static final List<Biome> CHECKLIST = Stream.concat(
-		IntStream.range(0, 5).boxed().flatMap(t -> IntStream.range(0, 5).boxed().flatMap(h -> IntStream.range(0, 2).mapToObj(w -> new Biome("t" + t + "h" + h + "w" + w,
+		IntStream.range(0, 5).boxed().flatMap(t -> IntStream.range(0, 5).boxed().flatMap(h -> IntStream.range(0, 2)
+			.mapToObj(w -> new Biome("t" + t + "h" + h + "w" + w,
 			IntStream.range(0, 20).mapToObj(i -> new Box(List.of(BANDS.get(t), BANDS.get(h), slice(2 * (i / 4), 9), slice(2 * (i % 4), 7), HALVES.get(w)))).toList())))),
 		Stream.of(MUSHROOM)
 	).toList();

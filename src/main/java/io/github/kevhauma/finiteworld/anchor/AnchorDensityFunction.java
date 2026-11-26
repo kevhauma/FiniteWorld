@@ -2,6 +2,7 @@ package io.github.kevhauma.finiteworld.anchor;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import net.minecraft.util.Interval;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;

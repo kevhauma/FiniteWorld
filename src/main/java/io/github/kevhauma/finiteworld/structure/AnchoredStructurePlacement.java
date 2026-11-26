@@ -62,7 +62,8 @@ public class AnchoredStructurePlacement extends ConcentricRingsStructurePlacemen
 	}
 
 	/** Called once per world before structure positions are computed; {@code heights} must not reference the level. */
-	public static void register(ChunkGeneratorStructureState state, ChunkGenerator generator, RegistryAccess registries, StructureTemplateManager templates, LevelHeightAccessor heights) {
+	public static void register(ChunkGeneratorStructureState state, ChunkGenerator generator, RegistryAccess registries,
+		StructureTemplateManager templates, LevelHeightAccessor heights) {
 		WORLDS.put(state, new World(generator, registries, templates, heights, CacheBuilder.newBuilder().build()));
 	}
 
@@ -95,7 +96,8 @@ public class AnchoredStructurePlacement extends ConcentricRingsStructurePlacemen
 		StructureStarts starts = new StructureStarts(state, generator, world.registries(), world.templates(), world.heights());
 		List<StructureSet> vanillaSets = state.possibleStructureSets().stream()
 			.map(Holder::value)
-			.filter(set -> !(set.placement() instanceof AnchoredStructurePlacement) && set.structures().stream().anyMatch(entry -> entry.structure().value() == this.structure.value()))
+			.filter(set -> !(set.placement() instanceof AnchoredStructurePlacement)
+				&& set.structures().stream().anyMatch(entry -> entry.structure().value() == this.structure.value()))
 			.toList();
 		Optional<ChunkPos> vanilla = vanillaSets.stream()
 			.flatMap(set -> starts.startChunks(set, radius.get()).filter(chunk -> this.isStructure(starts.generatingAt(set, chunk))))
@@ -111,9 +113,11 @@ public class AnchoredStructurePlacement extends ConcentricRingsStructurePlacemen
 		Predicate<ChunkPos> allowed = allowedBy(vanillaSets, state);
 		// Every anchor is inside the disc, so rings out to its diameter cover it.
 		Optional<ChunkPos> fallback = chunksOutward(hosts, 2 * SectionPos.blockToSectionCoord(radius.get().intValue()) + 1)
-			.filter(chunk -> StructureStarts.inside(chunk, radius.get()) && allowed.test(chunk) && starts.hasBiomeInColumn(this.structure, chunk) && starts.canStart(this.structure, chunk))
+			.filter(chunk -> StructureStarts.inside(chunk, radius.get()) && allowed.test(chunk)
+				&& starts.hasBiomeInColumn(this.structure, chunk) && starts.canStart(this.structure, chunk))
 			.findFirst();
-		FiniteWorld.LOGGER.debug("{}: vanilla starts none inside radius {}, fallback at chunk {}", this.structure.getRegisteredName(), radius.get().intValue(), fallback.map(Object::toString).orElse("none found"));
+		FiniteWorld.LOGGER.debug("{}: vanilla starts none inside radius {}, fallback at chunk {}", this.structure.getRegisteredName(),
+			radius.get().intValue(), fallback.map(Object::toString).orElse("none found"));
 		return fallback.stream().toList();
 	}
 
@@ -124,7 +128,9 @@ public class AnchoredStructurePlacement extends ConcentricRingsStructurePlacemen
 	 */
 	private static Predicate<ChunkPos> allowedBy(List<StructureSet> vanillaSets, ChunkGeneratorStructureState state) {
 		return vanillaSets.stream()
-			.flatMap(set -> set.placement() instanceof AbstractSpreadingStructurePlacement spread ? ((SpreadingPlacementAccessor) spread).finiteworld$exclusionZone().stream() : Stream.empty())
+			.flatMap(set -> set.placement() instanceof AbstractSpreadingStructurePlacement spread
+				? ((SpreadingPlacementAccessor) spread).finiteworld$exclusionZone().stream()
+				: Stream.empty())
 			.map(zone -> {
 				List<ChunkPos> fallbacks = fallbackStarts(state, zone.otherSet().value());
 				return (Predicate<ChunkPos>) chunk -> !state.hasStructureChunkInRange(zone.otherSet(), chunk.x(), chunk.z(), zone.chunkCount())
@@ -137,7 +143,8 @@ public class AnchoredStructurePlacement extends ConcentricRingsStructurePlacemen
 	private static List<ChunkPos> fallbackStarts(ChunkGeneratorStructureState state, StructureSet set) {
 		return state.possibleStructureSets().stream()
 			.map(holder -> holder.value().placement())
-			.filter(placement -> placement instanceof AnchoredStructurePlacement anchored && set.structures().stream().anyMatch(entry -> entry.structure().value() == anchored.structure.value()))
+			.filter(placement -> placement instanceof AnchoredStructurePlacement anchored
+				&& set.structures().stream().anyMatch(entry -> entry.structure().value() == anchored.structure.value()))
 			.flatMap(placement -> ((AnchoredStructurePlacement) placement).positions(state).stream())
 			.toList();
 	}
@@ -180,6 +187,7 @@ public class AnchoredStructurePlacement extends ConcentricRingsStructurePlacemen
 		return CODEC;
 	}
 
-	private record World(ChunkGenerator generator, RegistryAccess registries, StructureTemplateManager templates, LevelHeightAccessor heights, Cache<AnchoredStructurePlacement, List<ChunkPos>> positions) {
+	private record World(ChunkGenerator generator, RegistryAccess registries, StructureTemplateManager templates,
+		LevelHeightAccessor heights, Cache<AnchoredStructurePlacement, List<ChunkPos>> positions) {
 	}
 }

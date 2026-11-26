@@ -2,10 +2,11 @@ package io.github.kevhauma.finiteworld.anchor;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import net.minecraft.SharedConstants;
-import net.minecraft.server.Bootstrap;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import net.minecraft.SharedConstants;
+import net.minecraft.server.Bootstrap;
 
 class AnchorPlanFunctionTest {
 	@BeforeAll

@@ -4,14 +4,16 @@ import io.github.kevhauma.finiteworld.anchor.AnchorPlanFunction;
 import io.github.kevhauma.finiteworld.edge.EdgeCapDensityFunction;
 import io.github.kevhauma.finiteworld.edge.EdgeDensityFunction;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Collectors;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.world.level.levelgen.Aquifer;
@@ -29,6 +31,9 @@ import net.minecraft.world.level.levelgen.densityfunction.DfRewriteRule;
  * {@code finiteworld:edge}, {@code finiteworld:edge_cap} and {@code finiteworld:anchor_plan} node; a new radius
  * rewrites those nodes, which inlines them (and the path to them) into the noise settings, so the world's saved
  * generator settings carry the radius itself.
+ * <p>
+ * The node types import {@link #CODEC} and this class imports them back: accepted, so the limits, parsing and
+ * rewrite of the one setting stay in one place.
  */
 public final class FiniteRadius {
 	public static final int MIN = 3000;
@@ -79,19 +84,24 @@ public final class FiniteRadius {
 		}
 		OptionalInt radius = value.isJsonPrimitive() ? parse(value.getAsString()) : OptionalInt.empty();
 		if (radius.isEmpty()) {
-			FiniteWorld.LOGGER.error("generator-settings radius {} is not a whole number from {} to {}; keeping {}", value, MIN, MAX, of(dimensions).orElseThrow().intValue());
+			FiniteWorld.LOGGER.error("generator-settings radius {} is not a whole number from {} to {}; keeping {}",
+				value, MIN, MAX, of(dimensions).orElseThrow().intValue());
 			return dimensions;
 		}
 		return withRadius(dimensions, registries, radius.getAsInt());
 	}
 
-	/** The settings with every radius node at this radius. {@code spawn_target} only holds references, so it is left alone (see {@link #withRadius(List, float)}). */
+	/**
+	 * The settings with every radius node at this radius.
+	 * {@code spawn_target} only holds references, so it is left alone (see {@link #withRadius(List, float)}).
+	 */
 	public static NoiseGeneratorSettings withRadius(NoiseGeneratorSettings settings, float radius) {
 		DfRewriteRule rule = rule(radius);
 		NoiseRouter r = settings.noiseRouter();
 		NoiseRouter router = new NoiseRouter(rule.rewrite(r.temperature()), rule.rewrite(r.vegetation()), rule.rewrite(r.continents()),
 			rule.rewrite(r.erosion()), rule.rewrite(r.depth()), rule.rewrite(r.ridges()), rule.rewrite(r.chunkSurfaceLevel()), rule.rewrite(r.finalDensity()));
-		Optional<Aquifer.Config> aquifers = settings.aquifers().map(a -> new Aquifer.Config(rule.rewrite(a.barrierNoise()), rule.rewrite(a.fluidLevelFloodednessNoise()),
+		Optional<Aquifer.Config> aquifers = settings.aquifers().map(a -> new Aquifer.Config(rule.rewrite(a.barrierNoise()),
+			rule.rewrite(a.fluidLevelFloodednessNoise()),
 			rule.rewrite(a.fluidLevelSpreadNoise()), rule.rewrite(a.lavaNoise()), rule.rewrite(a.exclusion()), rule.rewrite(a.surfaceLevel())));
 		NoiseGeneratorSettings.DebugFunctions debug = new NoiseGeneratorSettings.DebugFunctions(settings.debugFunctions().functions().stream()
 			.map(entry -> new NoiseGeneratorSettings.DebugFunctionEntry(entry.label(), rule.rewrite(entry.function())))

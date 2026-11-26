@@ -77,41 +77,58 @@ public final class AnchorPlanner {
 	}
 
 	/**
-	 * Climate samples on a square grid of side {@code 2 * half + 1} centred on the origin: per point (null
-	 * outside the disc) and per parameter (0 outside), and each point's neighbours inside the disc.
+	 * Climate samples on a square grid of side {@code 2 * half + 1} centred on the origin: one array per parameter
+	 * (0 outside the disc), which points lie inside the disc, and each point's neighbours inside it.
 	 */
-	private record Grid(int step, int half, float[][] values, float[][] columns, int[][] neighbours) {
+	private record Grid(int step, int half, boolean[] inside, float[][] columns, int[][] neighbours) {
 		static Grid sample(List<Climate> climate, float radius, int step) {
 			int half = (int) radius / step;
 			int n = 2 * half + 1;
-			float[][] values = IntStream.range(0, n * n)
-				.mapToObj(i -> {
-					int x = (i / n - half) * step;
-					int z = (i % n - half) * step;
-					return (double) x * x + (double) z * z <= (double) radius * radius ? AnchorPlanner.sample(climate, x, z) : null;
-				})
-				.toArray(float[][]::new);
+			boolean[] inside = new boolean[n * n];
+			float[][] columns = new float[PARAMETERS][n * n];
+			for (int i = 0; i < n * n; i++) {
+				int x = coordinate(i / n, half, step);
+				int z = coordinate(i % n, half, step);
+				inside[i] = (double) x * x + (double) z * z <= (double) radius * radius;
+				if (inside[i]) {
+					float[] values = AnchorPlanner.sample(climate, x, z);
+					for (int p = 0; p < PARAMETERS; p++) {
+						columns[p][i] = values[p];
+					}
+				}
+			}
 			int[][] neighbours = IntStream.range(0, n * n)
 				.mapToObj(i -> IntStream.of(i % n > 0 ? i - 1 : -1, i % n < n - 1 ? i + 1 : -1, i - n, i + n)
-					.filter(j -> j >= 0 && j < values.length && values[j] != null)
+					.filter(j -> j >= 0 && j < inside.length && inside[j])
 					.toArray())
 				.toArray(int[][]::new);
-			float[][] columns = IntStream.range(0, PARAMETERS)
-				.mapToObj(p -> toArray(Stream.of(values).map(v -> v == null ? 0.0F : v[p]).toList()))
-				.toArray(float[][]::new);
-			return new Grid(step, half, values, columns, neighbours);
+			return new Grid(step, half, inside, columns, neighbours);
+		}
+
+		/** Block coordinate of row or column {@code index}. */
+		private static int coordinate(int index, int half, int step) {
+			return (index - half) * step;
 		}
 
 		int x(int i) {
-			return (i / (2 * this.half + 1) - this.half) * this.step;
+			return coordinate(i / (2 * this.half + 1), this.half, this.step);
 		}
 
 		int z(int i) {
-			return (i % (2 * this.half + 1) - this.half) * this.step;
+			return coordinate(i % (2 * this.half + 1), this.half, this.step);
+		}
+
+		/** The climate at point {@code i}, in router order. */
+		float[] climate(int i) {
+			float[] climate = new float[PARAMETERS];
+			for (int p = 0; p < PARAMETERS; p++) {
+				climate[p] = this.columns[p][i];
+			}
+			return climate;
 		}
 
 		int points() {
-			return (int) Stream.of(this.values).filter(v -> v != null).count();
+			return (int) IntStream.range(0, this.inside.length).filter(i -> this.inside[i]).count();
 		}
 	}
 
@@ -148,7 +165,7 @@ public final class AnchorPlanner {
 			}
 			// Refine on a quarter-step grid around the coarse spot; the coarse spot itself wins ties.
 			int fine = grid.step() / 4;
-			Spot centre = this.spot(grid.x(coarse), grid.z(coarse), grid.values()[coarse]);
+			Spot centre = this.spot(grid.x(coarse), grid.z(coarse), grid.climate(coarse));
 			Spot best = Stream.concat(Stream.of(centre), IntStream.rangeClosed(-2, 2).boxed()
 					.flatMap(dx -> IntStream.rangeClosed(-2, 2).filter(dz -> dx != 0 || dz != 0).mapToObj(dz -> new Column(centre.x() + dx * fine, centre.z() + dz * fine)))
 					.filter(c -> fits(c.x(), c.z(), maxCentre, placed))
@@ -278,7 +295,7 @@ public final class AnchorPlanner {
 	 * flat per-parameter arrays, so the JIT can vectorise the inner loop.
 	 */
 	private static float[] distances(float[][] cores, Grid grid) {
-		int n = grid.values().length;
+		int n = grid.inside().length;
 		float[] distance = new float[n];
 		float[] sum = new float[n];
 		Arrays.fill(distance, Float.POSITIVE_INFINITY);
@@ -301,7 +318,7 @@ public final class AnchorPlanner {
 			}
 		}
 		for (int i = 0; i < n; i++) {
-			if (grid.values()[i] == null) {
+			if (!grid.inside()[i]) {
 				distance[i] = Float.NaN;
 			}
 		}

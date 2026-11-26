@@ -91,14 +91,16 @@ public class AnchorPlanGameTest {
 		NoiseGeneratorSettings finite = ((NoiseBasedChunkGenerator) GuaranteeGameTest.finiteOverworld(registries).generator()).generatorSettings().value();
 		AnchorPlanFunction p = (AnchorPlanFunction) registries.lookupOrThrow(Registries.DENSITY_FUNCTION).getValueOrThrow(PLAN);
 		// Radius minus band below one anchor radius: the codec rejects this, so build it in code.
-		AnchorPlanFunction noRoom = new AnchorPlanFunction(3000.0F, 2900.0F, p.biomes(), p.exclude(), p.temperature(), p.vegetation(), p.continents(), p.erosion(), p.ridges());
+		AnchorPlanFunction noRoom = new AnchorPlanFunction(3000.0F, 2900.0F,
+			p.biomes(), p.exclude(), p.temperature(), p.vegetation(), p.continents(), p.erosion(), p.ridges());
 		RandomState random = RandomState.create(registries.lookupOrThrow(Registries.NOISE), SEED, finite);
 		long before = AnchorPlanFunction.plansComputed();
 		try {
 			random.getSampler(noRoom);
 			helper.fail(Component.literal("Planning with no room for anchors did not fail"));
 		} catch (IllegalStateException e) {
-			helper.assertTrue("Anchor planning failed".equals(e.getMessage()) && e.getCause() instanceof IllegalStateException cause && cause.getMessage().startsWith("No room for"),
+			helper.assertTrue("Anchor planning failed".equals(e.getMessage())
+				&& e.getCause() instanceof IllegalStateException cause && cause.getMessage().startsWith("No room for"),
 				Component.literal("Expected \"Anchor planning failed\" caused by \"No room for …\", got " + e + " caused by " + e.getCause()));
 		}
 		helper.assertTrue(AnchorPlanFunction.plansComputed() == before, Component.literal("A failed plan was counted"));
@@ -113,7 +115,8 @@ public class AnchorPlanGameTest {
 		DynamicOps<JsonElement> ops = registries.createSerializationContext(JsonOps.INSTANCE);
 		Codec<AnchorPlanFunction> codec = AnchorPlanFunction.CODEC.codec();
 		List<String> rejected = IntStream.iterate(FiniteRadius.MIN, r -> r <= FiniteRadius.MAX, r -> r + 1000)
-			.mapToObj(radius -> new AnchorPlanFunction(radius, p.band(), p.biomes(), p.exclude(), p.temperature(), p.vegetation(), p.continents(), p.erosion(), p.ridges()))
+			.mapToObj(radius -> new AnchorPlanFunction(radius, p.band(),
+				p.biomes(), p.exclude(), p.temperature(), p.vegetation(), p.continents(), p.erosion(), p.ridges()))
 			.map(plan -> codec.encodeStart(ops, plan).flatMap(json -> codec.parse(ops, json)))
 			.filter(DataResult::isError)
 			.map(result -> result.error().orElseThrow().message())

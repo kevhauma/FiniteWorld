@@ -39,10 +39,24 @@ Five small issues, none affecting behaviour, worth fixing in one pass.
 
 ## Acceptance criteria
 
-- [ ] Each of the five items is fixed or explicitly left with a reason in this ticket.
-- [ ] Plans and plan hashes are unchanged (`sameClimateGivesTheSamePlan`; seed 12345 hash in the game-test log).
-- [ ] `./gradlew build` passes.
+- [x] Each of the five items is fixed or explicitly left with a reason in this ticket. (See Outcome below.)
+- [x] Plans and plan hashes are unchanged (`sameClimateGivesTheSamePlan`; seed 12345 hash in the game-test log).
+      (Passes; seed 12345 plan hash 1725760216, as before.)
+- [x] `./gradlew build` passes. (Unit tests and all 10 game tests.)
 
 ## Notes
 
 - A formatter run touches most files; do it in its own commit so reviews of other changes stay readable.
+
+## Outcome
+
+- **Duplicate grid data:** fixed. `Grid` keeps the per-parameter `columns`, an `inside` mask and one `coordinate`
+  helper; `climate(i)` reads a point's climate from the columns.
+- **Argument order:** fixed. `EdgeCapDensityFunction.capped` takes x, y, z.
+- **Constant placement:** fixed. `INLAND` sits with `STEP` at the top of `AnchorPlanFunction`.
+- **Formatting:** fixed by hand, no formatter. Every Java file uses one import order (static, this mod, `java`, other
+  libraries, Fabric, Minecraft, with a blank line between groups) and no line is longer than 160 characters. A new
+  `.editorconfig` records both, so IntelliJ applies them; Spotless was skipped because it adds a build plugin.
+  Done in this ticket's single commit (one commit per ticket was asked for), not a separate formatter commit.
+- **Package cycle:** accepted. `FiniteRadius` holds the limits, parsing and rewrite of the one setting; splitting the
+  codec out would spread them across packages. The reason is in `FiniteRadius`'s Javadoc.

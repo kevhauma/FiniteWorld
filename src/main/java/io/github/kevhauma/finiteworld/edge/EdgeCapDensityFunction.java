@@ -5,6 +5,7 @@ import io.github.kevhauma.finiteworld.FiniteRadius;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import net.minecraft.util.Interval;
 import net.minecraft.world.level.levelgen.densityfunction.DensityBuffer;
 import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
@@ -28,7 +29,7 @@ public record EdgeCapDensityFunction(DensityFunction input, float radius, int se
 		)
 		.apply(i, EdgeCapDensityFunction::new));
 
-	static boolean capped(double blockX, double blockZ, int blockY, float radius, int seaLevel) {
+	static boolean capped(double blockX, int blockY, double blockZ, float radius, int seaLevel) {
 		return blockY >= seaLevel && blockX * blockX + blockZ * blockZ > (double) radius * radius;
 	}
 
@@ -67,7 +68,7 @@ public record EdgeCapDensityFunction(DensityFunction input, float radius, int se
 			for (int z = 0; z < volume.sizeZ(); z++) {
 				for (int x = 0; x < volume.sizeX(); x++) {
 					for (int y = 0; y < volume.sizeY(); y++, index++) {
-						if (capped(volume.blockX(x), volume.blockZ(z), volume.blockY(y), this.radius, this.seaLevel)) {
+						if (capped(volume.blockX(x), volume.blockY(y), volume.blockZ(z), this.radius, this.seaLevel)) {
 							outputBuffer.set(index, Math.min(outputBuffer.get(index), AIR));
 						}
 					}
@@ -78,7 +79,7 @@ public record EdgeCapDensityFunction(DensityFunction input, float radius, int se
 		@Override
 		public float sampleValue(final SamplerContext context, final int blockX, final int blockY, final int blockZ) {
 			float value = this.input.sampleValue(context, blockX, blockY, blockZ);
-			return capped(blockX, blockZ, blockY, this.radius, this.seaLevel) ? Math.min(value, AIR) : value;
+			return capped(blockX, blockY, blockZ, this.radius, this.seaLevel) ? Math.min(value, AIR) : value;
 		}
 	}
 }

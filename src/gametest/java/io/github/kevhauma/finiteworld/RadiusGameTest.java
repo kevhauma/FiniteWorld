@@ -3,13 +3,14 @@ package io.github.kevhauma.finiteworld;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanFunction;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.mojang.serialization.JsonOps;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
 
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 

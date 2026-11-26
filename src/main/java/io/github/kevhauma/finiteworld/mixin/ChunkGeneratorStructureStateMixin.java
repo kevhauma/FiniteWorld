@@ -21,9 +21,11 @@ import net.minecraft.world.level.levelgen.structure.placement.ConcentricRingsStr
 @Mixin(ChunkGeneratorStructureState.class)
 abstract class ChunkGeneratorStructureStateMixin {
 	@Inject(method = "generateRingPositions", at = @At("HEAD"), cancellable = true)
-	private void finiteworld$anchoredPosition(Holder<StructureSet> set, ConcentricRingsStructurePlacement placement, CallbackInfoReturnable<CompletableFuture<List<ChunkPos>>> cir) {
+	private void finiteworld$anchoredPosition(Holder<StructureSet> set, ConcentricRingsStructurePlacement placement,
+		CallbackInfoReturnable<CompletableFuture<List<ChunkPos>>> cir) {
 		if (placement instanceof AnchoredStructurePlacement anchored) {
-			cir.setReturnValue(CompletableFuture.supplyAsync(() -> anchored.positions((ChunkGeneratorStructureState) (Object) this), Util.backgroundExecutor().forName("finiteworldFallback")));
+			cir.setReturnValue(CompletableFuture.supplyAsync(() -> anchored.positions((ChunkGeneratorStructureState) (Object) this),
+				Util.backgroundExecutor().forName("finiteworldFallback")));
 		}
 	}
 }

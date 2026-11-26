@@ -58,7 +58,8 @@ final class AnchorField {
 		}
 		List<Anchor> entries = cells.stream().flatMap(List::stream).toList();
 		return new AnchorField(minCellX, minCellZ, cellsX, cellsZ, start,
-			floats(entries, a -> a.x()), floats(entries, a -> a.z()), floats(entries, a -> (float) a.radius() * a.radius()), floats(entries, a -> a.offset().get(parameter)));
+			floats(entries, a -> a.x()), floats(entries, a -> a.z()),
+				floats(entries, a -> (float) a.radius() * a.radius()), floats(entries, a -> a.offset().get(parameter)));
 	}
 
 	/** Whether every sample is 0 (no anchor moves this parameter). */

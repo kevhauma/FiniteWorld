@@ -4,12 +4,6 @@ import io.github.kevhauma.finiteworld.FiniteRadius;
 import io.github.kevhauma.finiteworld.FiniteWorld;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.util.concurrent.UncheckedExecutionException;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,6 +11,14 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.UncheckedExecutionException;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
@@ -47,10 +49,14 @@ import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
  * datapack load, so nothing is hardcoded.
  */
 public record AnchorPlanFunction(
-	float radius, float band, Holder<MultiNoiseBiomeSourceParameterList> biomes, HolderSet<Biome> exclude, DensityFunction temperature, DensityFunction vegetation, DensityFunction continents, DensityFunction erosion, DensityFunction ridges
+	float radius, float band, Holder<MultiNoiseBiomeSourceParameterList> biomes, HolderSet<Biome> exclude,
+		DensityFunction temperature, DensityFunction vegetation, DensityFunction continents, DensityFunction erosion, DensityFunction ridges
 ) implements DensityFunction {
 	// Coarse grid step in blocks; the planner refines near the chosen spots.
 	static final int STEP = 64;
+	// Vanilla's coast ends here (OverworldBiomeBuilder's near-inland start). Coast terrain sits at sea level, so an anchor
+	// steered into a coast box can leave a biome with no ground above the sea (a desert with no room for its pyramid).
+	private static final float INLAND = -0.11F;
 	// RandomState makes one CompileContext and compiles every function with it, so the context identifies the world.
 	// Weak (identity) keys drop the plan when the RandomState is collected; the plan holds no reference back.
 	// shortcut: one plan per world, from whichever anchor_plan node compiles first; key on the node too if a world ever holds two.
@@ -82,7 +88,10 @@ public record AnchorPlanFunction(
 		return PLANS.stats().loadSuccessCount();
 	}
 
-	/** The plan of the world (RandomState) these settings belong to, read through the settings' own plan node; empty without one (Default worlds), which plans nothing. */
+	/**
+	 * The plan of the world (RandomState) these settings belong to, read through the settings' own plan node;
+	 * empty without one (Default worlds), which plans nothing.
+	 */
 	public static Optional<AnchorPlan> planOf(RandomState random, NoiseGeneratorSettings settings) {
 		List<AnchorPlanFunction> found = new ArrayList<>();
 		new DfRewriteRule() {
@@ -115,7 +124,8 @@ public record AnchorPlanFunction(
 			.<AnchorPlanner.Climate>map(sampler -> (x, z) -> sampler.sampleValue(SamplerContext.EMPTY_UNCACHED, x, 0, z))
 			.toList();
 		List<AnchorPlanner.Biome> checklist = this.checklist();
-		FiniteWorld.LOGGER.debug("Checklist from {} minus {}: {} biomes, {} boxes: {}", this.biomes.getRegisteredName(), this.exclude.unwrapKey().map(tag -> "#" + tag.location()).orElse("a biome list"),
+		FiniteWorld.LOGGER.debug("Checklist from {} minus {}: {} biomes, {} boxes: {}",
+			this.biomes.getRegisteredName(), this.exclude.unwrapKey().map(tag -> "#" + tag.location()).orElse("a biome list"),
 			checklist.size(), checklist.stream().mapToInt(biome -> biome.boxes().size()).sum(), checklist.stream().map(AnchorPlanner.Biome::id).toList());
 		AnchorPlan plan = AnchorPlanner.plan(climate, checklist, this.radius, this.band, STEP);
 		// The hash is stable across runs (records of ints, floats and strings), so restarts and servers can be compared from the log.
@@ -124,11 +134,10 @@ public record AnchorPlanFunction(
 		return plan;
 	}
 
-	// Vanilla's coast ends here (OverworldBiomeBuilder's near-inland start). Coast terrain sits at sea level, so an anchor
-	// steered into a coast box can leave a biome with no ground above the sea (a desert with no room for its pyramid).
-	private static final float INLAND = -0.11F;
-
-	/** One entry per biome in parameter-list order, with its distinct boxes cut to inland where it has any (depth and offset dropped: the planner steers the 2D climate). */
+	/**
+	 * One entry per biome in parameter-list order, with its distinct boxes cut to inland where it has any
+	 * (depth and offset dropped: the planner steers the 2D climate).
+	 */
 	List<AnchorPlanner.Biome> checklist() {
 		return this.biomes.value().parameters().values().stream()
 			.filter(entry -> !this.exclude.contains(entry.getSecond()))

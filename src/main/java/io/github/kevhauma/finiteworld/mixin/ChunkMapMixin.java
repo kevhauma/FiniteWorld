@@ -3,7 +3,6 @@ package io.github.kevhauma.finiteworld.mixin;
 import io.github.kevhauma.finiteworld.structure.AnchoredStructurePlacement;
 
 import com.llamalad7.mixinextras.sugar.Local;
-
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,9 +25,11 @@ abstract class ChunkMapMixin {
 	private ChunkGeneratorStructureState chunkGeneratorState;
 
 	@Inject(method = "<init>", at = @At("TAIL"))
-	private void finiteworld$registerStructureContext(CallbackInfo ci, @Local(argsOnly = true) ServerLevel level, @Local(argsOnly = true) StructureTemplateManager templates,
+	private void finiteworld$registerStructureContext(CallbackInfo ci, @Local(argsOnly = true) ServerLevel level,
+		@Local(argsOnly = true) StructureTemplateManager templates,
 		@Local(argsOnly = true) ChunkGenerator generator) {
 		// A plain height accessor, not the level, so the registration holds no reference back to the state.
-		AnchoredStructurePlacement.register(this.chunkGeneratorState, generator, level.registryAccess(), templates, LevelHeightAccessor.create(level.getMinY(), level.getHeight()));
+		AnchoredStructurePlacement.register(this.chunkGeneratorState, generator, level.registryAccess(), templates,
+			LevelHeightAccessor.create(level.getMinY(), level.getHeight()));
 	}
 }

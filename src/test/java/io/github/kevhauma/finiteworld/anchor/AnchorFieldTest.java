@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.Anchor;
+
 import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 class AnchorFieldTest {
@@ -75,7 +77,8 @@ class AnchorFieldTest {
 
 	private static float bruteForce(int p, int x, int z) {
 		return (float) ANCHORS.stream()
-			.mapToDouble(a -> AnchorField.falloff((float) (x - a.x()) * (x - a.x()) + (float) (z - a.z()) * (z - a.z()), (float) a.radius() * a.radius()) * a.offset().get(p))
+			.mapToDouble(a -> AnchorField.falloff((float) (x - a.x()) * (x - a.x()) + (float) (z - a.z()) * (z - a.z()),
+				(float) a.radius() * a.radius()) * a.offset().get(p))
 			.sum();
 	}
 }
