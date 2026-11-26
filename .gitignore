@@ -32,6 +32,10 @@ bin/
 
 run/
 
+# build and pre-generation logs
+
+logs/
+
 # java
 
 hs_err_*.log

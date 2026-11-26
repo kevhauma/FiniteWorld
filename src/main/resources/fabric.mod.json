@@ -13,9 +13,6 @@
 	"entrypoints": {
 		"main": [
 			"io.github.kevhauma.finiteworld.FiniteWorld"
-		],
-		"client": [
-			"io.github.kevhauma.finiteworld.client.FiniteWorldClient"
 		]
 	},
 	"mixins": [

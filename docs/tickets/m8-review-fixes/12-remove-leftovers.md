@@ -29,10 +29,11 @@ An empty client entrypoint, an untracked log folder and a template comment are l
 
 ## Acceptance criteria
 
-- [ ] `./gradlew build` passes.
+- [x] `./gradlew build` passes. (Unit tests and all 10 game tests.)
 - [ ] `./gradlew runClient` reaches the title screen, and Create World → Finite → Customize still opens the radius
-      screen.
-- [ ] `git status` no longer lists `logs/`.
+      screen. (Open: needs a person at the game window. Nothing else referenced `FiniteWorldClient`; the client mixin
+      config that adds Customize is still registered.)
+- [x] `git status` no longer lists `logs/`. (`logs/` is in `.gitignore`.)
 
 ## Notes
 
