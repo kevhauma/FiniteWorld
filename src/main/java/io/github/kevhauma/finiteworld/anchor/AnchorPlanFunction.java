@@ -115,11 +115,11 @@ public record AnchorPlanFunction(
 			.<AnchorPlanner.Climate>map(sampler -> (x, z) -> sampler.sampleValue(SamplerContext.EMPTY_UNCACHED, x, 0, z))
 			.toList();
 		List<AnchorPlanner.Biome> checklist = this.checklist();
-		FiniteWorld.LOGGER.info("[ANC-2] Checklist from {} minus {}: {} biomes, {} boxes: {}", this.biomes.getRegisteredName(), this.exclude.unwrapKey().map(tag -> "#" + tag.location()).orElse("a biome list"),
+		FiniteWorld.LOGGER.debug("Checklist from {} minus {}: {} biomes, {} boxes: {}", this.biomes.getRegisteredName(), this.exclude.unwrapKey().map(tag -> "#" + tag.location()).orElse("a biome list"),
 			checklist.size(), checklist.stream().mapToInt(biome -> biome.boxes().size()).sum(), checklist.stream().map(AnchorPlanner.Biome::id).toList());
 		AnchorPlan plan = AnchorPlanner.plan(climate, checklist, this.radius, this.band, STEP);
 		// The hash is stable across runs (records of ints, floats and strings), so restarts and servers can be compared from the log.
-		FiniteWorld.LOGGER.info("[ANC-2] Planned {} anchors for radius {} band {}: {} grid points (step {}) in {} ms, plan hash {}",
+		FiniteWorld.LOGGER.info("Planned {} anchors for radius {} band {}: {} grid points (step {}) in {} ms, plan hash {}",
 			plan.anchors().size(), (int) this.radius, (int) this.band, plan.gridPoints(), STEP, (System.nanoTime() - start) / 1_000_000, plan.hashCode());
 		return plan;
 	}

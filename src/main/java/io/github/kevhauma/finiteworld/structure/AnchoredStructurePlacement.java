@@ -101,7 +101,7 @@ public class AnchoredStructurePlacement extends ConcentricRingsStructurePlacemen
 			.flatMap(set -> starts.startChunks(set, radius.get()).filter(chunk -> this.isStructure(starts.generatingAt(set, chunk))))
 			.findFirst();
 		if (vanilla.isPresent()) {
-			FiniteWorld.LOGGER.info("[STR-2] {}: vanilla starts one at chunk {}, no fallback", this.structure.getRegisteredName(), vanilla.get());
+			FiniteWorld.LOGGER.debug("{}: vanilla starts one at chunk {}, no fallback", this.structure.getRegisteredName(), vanilla.get());
 			return List.of();
 		}
 		List<ChunkPos> hosts = plan.get().anchors().stream()
@@ -113,7 +113,7 @@ public class AnchoredStructurePlacement extends ConcentricRingsStructurePlacemen
 		Optional<ChunkPos> fallback = chunksOutward(hosts, 2 * SectionPos.blockToSectionCoord(radius.get().intValue()) + 1)
 			.filter(chunk -> StructureStarts.inside(chunk, radius.get()) && allowed.test(chunk) && starts.hasBiomeInColumn(this.structure, chunk) && starts.canStart(this.structure, chunk))
 			.findFirst();
-		FiniteWorld.LOGGER.info("[STR-2] {}: vanilla starts none inside radius {}, fallback at chunk {}", this.structure.getRegisteredName(), radius.get().intValue(), fallback.map(Object::toString).orElse("none found"));
+		FiniteWorld.LOGGER.debug("{}: vanilla starts none inside radius {}, fallback at chunk {}", this.structure.getRegisteredName(), radius.get().intValue(), fallback.map(Object::toString).orElse("none found"));
 		return fallback.stream().toList();
 	}
 
