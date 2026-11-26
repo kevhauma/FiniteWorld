@@ -1,5 +1,7 @@
 package io.github.kevhauma.finiteworld.edge;
 
+import io.github.kevhauma.finiteworld.FiniteRadius;
+
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
@@ -28,7 +30,7 @@ public record EdgeDensityFunction(
 	public static final MapCodec<EdgeDensityFunction> CODEC = RecordCodecBuilder.<EdgeDensityFunction>mapCodec(
 			i -> i.group(
 					DensityFunction.CODEC.fieldOf("input").forGetter(EdgeDensityFunction::input),
-					ExtraCodecs.POSITIVE_FLOAT.fieldOf("radius").forGetter(EdgeDensityFunction::radius),
+					FiniteRadius.CODEC.fieldOf("radius").forGetter(EdgeDensityFunction::radius),
 					ExtraCodecs.POSITIVE_FLOAT.fieldOf("band").forGetter(EdgeDensityFunction::band),
 					ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("narrow_band").forGetter(e -> e.narrowBand == e.band ? Optional.empty() : Optional.of(e.narrowBand)),
 					DensityFunction.CODEC.optionalFieldOf("outline", DensityFunctions.zero()).forGetter(EdgeDensityFunction::outline),

@@ -36,13 +36,17 @@ ramp without it.
 
 ## Acceptance criteria
 
-- [ ] The new `spawn_distance` matches the old one to within 0.01 at distances 0, 300, 550, 800 and 2,000
-      (unit or game test).
-- [ ] `GuaranteeGameTest.spawnOnLandNearCentre` passes (spawn on land within 500 blocks, seeds 1–20).
-- [ ] `RadiusGameTest` passes: every saved radius node is at the chosen radius.
-- [ ] Decoding an `edge` with radius below 3,000 fails.
-- [ ] The design doc's Radius UI paragraph no longer says `edge` keeps any positive radius.
-- [ ] `./gradlew build` passes.
+- [x] The new `spawn_distance` matches the old one to within 0.01 at distances 0, 300, 550, 800 and 2,000
+      (unit or game test). (`GuaranteeGameTest.spawnDistanceMatchesTheOldRamp`, at y -64, 64 and 200. A cubic spline
+      from (300, 1) to (800, -0.22) with zero slopes is exactly the old smoothstep.)
+- [x] `GuaranteeGameTest.spawnOnLandNearCentre` passes (spawn on land within 500 blocks, seeds 1–20). (Passes; all 20
+      `[SPAWN-1]` spawns are the same as before.)
+- [x] `RadiusGameTest` passes: every saved radius node is at the chosen radius. (Passes.)
+- [x] Decoding an `edge` with radius below 3,000 fails. (`EdgeDensityFunction` decodes `radius` with
+      `FiniteRadius.CODEC`; the same game test decodes radius 800 and expects an error.)
+- [x] The design doc's Radius UI paragraph no longer says `edge` keeps any positive radius. (Updated; the Spawn
+      paragraph describes the vanilla ramp.)
+- [x] `./gradlew build` passes. (Unit tests and all 10 game tests.)
 
 ## Notes
 
@@ -50,3 +54,9 @@ ramp without it.
   needed. If no vanilla combination reproduces the ramp, close this ticket with that finding.
 - Worlds saved by 1.0.0 hold the `edge`-based node; they must still load, so keep the old form decodable or
   confirm that saved worlds only reference it by id (spawn targets stay references).
+
+## Outcome
+
+`spawn_distance` is a `minecraft:spline` over `minecraft:slice` (axis y, coordinate 0) of `minecraft:distance_to_point`
+at the origin. `FiniteRadius` no longer special-cases it. Worlds saved by 26.3.0/26.3.1 keep `spawn_target` as
+references by id, so they load the new ramp; no saved world holds an `edge` below 3,000 inline.

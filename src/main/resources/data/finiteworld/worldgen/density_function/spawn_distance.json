@@ -1,6 +1,19 @@
 {
-  "type": "finiteworld:edge",
-  "input": 1.0,
-  "radius": 800.0,
-  "band": 500.0
+  "type": "minecraft:spline",
+  "spline": {
+    "coordinate": {
+      "type": "minecraft:slice",
+      "axis": "y",
+      "coordinate": 0,
+      "input": {
+        "type": "minecraft:distance_to_point",
+        "point": [0, 0, 0],
+        "metric": "euclidean"
+      }
+    },
+    "points": [
+      {"location": 300.0, "value": 1.0, "derivative": 0.0},
+      {"location": 800.0, "value": -0.22, "derivative": 0.0}
+    ]
+  }
 }

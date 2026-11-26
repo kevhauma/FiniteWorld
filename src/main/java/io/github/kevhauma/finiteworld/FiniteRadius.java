@@ -14,7 +14,6 @@ import java.util.OptionalInt;
 import java.util.stream.Collectors;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.levelgen.Aquifer;
 import net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator;
 import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
@@ -35,10 +34,8 @@ public final class FiniteRadius {
 	public static final int MIN = 3000;
 	// Planning cost grows with radius² (about 0.3 s at 4,000), so 20,000 keeps world creation to seconds.
 	public static final int MAX = 20000;
-	/** The {@code radius} field of {@code edge_cap} and {@code anchor_plan}: a datapack or edited level.dat outside [MIN, MAX] fails to load. */
+	/** The {@code radius} field of {@code edge}, {@code edge_cap} and {@code anchor_plan}: a datapack or edited level.dat outside [MIN, MAX] fails to load. */
 	public static final Codec<Float> CODEC = Codec.floatRange(MIN, MAX);
-	// Also a finiteworld:edge, but its radius is the spawn ramp's, not the world's.
-	private static final Identifier SPAWN_DISTANCE = FiniteWorld.id("spawn_distance");
 
 	private FiniteRadius() {
 	}
@@ -123,9 +120,6 @@ public final class FiniteRadius {
 		return new DfRewriteRule() {
 			@Override
 			public DensityFunction rewrite(DensityFunction function) {
-				if (function instanceof DensityFunctions.HolderHolder(Holder<DensityFunction> holder) && holder.is(SPAWN_DISTANCE)) {
-					return function;
-				}
 				return switch (function.rewriteChildren(this)) {
 					case EdgeDensityFunction e when e.radius() != radius -> e.withRadius(radius);
 					case EdgeCapDensityFunction c when c.radius() != radius -> new EdgeCapDensityFunction(c.input(), radius, c.seaLevel());

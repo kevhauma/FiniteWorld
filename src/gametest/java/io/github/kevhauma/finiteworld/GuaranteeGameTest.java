@@ -1,6 +1,8 @@
 package io.github.kevhauma.finiteworld;
 
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanFunction;
+import io.github.kevhauma.finiteworld.edge.EdgeDensityFunction;
+import io.github.kevhauma.finiteworld.edge.EdgeFalloff;
 import io.github.kevhauma.finiteworld.anchor.AnchorPlanner.AnchorPlan;
 import io.github.kevhauma.finiteworld.structure.AnchoredStructurePlacement;
 import io.github.kevhauma.finiteworld.structure.StructureStarts;
@@ -19,6 +21,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
+
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.mojang.serialization.JsonOps;
 
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 
@@ -50,6 +56,7 @@ import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
 import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 
@@ -171,6 +178,32 @@ public class GuaranteeGameTest {
 			.toList();
 
 		helper.assertTrue(failed.isEmpty(), Component.literal("Spawn not on land within " + SPAWN_MAX_DISTANCE + " blocks: " + failed));
+		helper.succeed();
+	}
+
+	/**
+	 * SPAWN-1's distance term, built from vanilla functions since M8-07, matches the {@code finiteworld:edge} ramp it
+	 * replaced (input 1, radius 800, band 500) at any height; an {@code edge} with that radius no longer decodes.
+	 */
+	@GameTest
+	public void spawnDistanceMatchesTheOldRamp(GameTestHelper helper) {
+		RegistryAccess registries = helper.getLevel().registryAccess();
+		DensityFunction ramp = registries.lookupOrThrow(Registries.DENSITY_FUNCTION).getValueOrThrow(ResourceKey.create(Registries.DENSITY_FUNCTION, FiniteWorld.id("spawn_distance")));
+		NoiseGeneratorSettings settings = ((NoiseBasedChunkGenerator) finiteOverworld(registries).generator()).generatorSettings().value();
+		RandomState random = RandomState.create(registries.lookupOrThrow(Registries.NOISE), 1L, settings);
+		// (0.6 d, 0.8 d) lies d blocks from the origin.
+		List<String> off = IntStream.of(0, 300, 550, 800, 2000).boxed()
+			.flatMap(d -> IntStream.of(-64, 64, 200).mapToObj(y -> {
+				float value = random.sampleBlockValueUncached(ramp, d * 3 / 5, y, d * 4 / 5);
+				float old = EdgeFalloff.apply(1.0F, d, 800.0F, 500.0F);
+				return Math.abs(value - old) <= 0.01F ? null : "distance " + d + " y " + y + ": " + value + ", was " + old;
+			}))
+			.filter(Objects::nonNull)
+			.toList();
+		helper.assertTrue(off.isEmpty(), Component.literal("Spawn ramp differs from the old edge ramp: " + off));
+		JsonObject smallEdge = JsonParser.parseString("{\"input\": 1.0, \"radius\": 800.0, \"band\": 500.0}").getAsJsonObject();
+		helper.assertTrue(EdgeDensityFunction.CODEC.codec().parse(registries.createSerializationContext(JsonOps.INSTANCE), smallEdge).isError(),
+			Component.literal("An edge with radius 800 decoded"));
 		helper.succeed();
 	}
 
