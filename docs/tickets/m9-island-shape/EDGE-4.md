@@ -21,7 +21,8 @@ every shape and round worlds generate exactly as before.
   caps the final density where `x² + z² > radius²`.
 - [FiniteRadius](../../../src/main/java/io/github/kevhauma/finiteworld/FiniteRadius.java) holds the radius limits and
   codec, reads the radius back from `edge_cap` (`FiniteRadius.of`) and rewrites every `edge`, `edge_cap` and
-  `anchor_plan` node to a new radius (`rule`), skipping `spawn_distance`.
+  `anchor_plan` node to a new radius (`rule`). `spawn_distance` is built from vanilla density functions (M8-07), so
+  the rewrite never touches it.
 - Design doc: [The edge](../../design.md#the-edge), [Beyond the radius](../../design.md#beyond-the-radius).
 
 ## Desired result (to-be)
