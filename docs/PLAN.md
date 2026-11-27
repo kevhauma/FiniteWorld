@@ -18,6 +18,8 @@ Fixes from the codebase reviews are tracked per review: [2026-11-22](tickets/m7-
 | [EDGE-2](tickets/m5-polish/EDGE-2.md) | P2 | Edge | Natural coastline: wandering outline and adaptive band width | open |
 | [EDGE-3](tickets/m5-polish/EDGE-3.md) | P2 | Edge | Coast traces the circle along the west of seed 12345 at radius 3000 | open |
 | [EDGE-4](tickets/m9-island-shape/EDGE-4.md) | P3 | Edge | Island shape in the generator settings: circle, rectangle | open |
+| [ISL-1](tickets/m11-resource-islands/ISL-1.md) | P3 | Islands | Raise small islands past the radius | open |
+| [ISL-2](tickets/m11-resource-islands/ISL-2.md) | P3 | Islands | Build each island from one material | open |
 | [TEST-1](tickets/m1-finite-ocean/TEST-1.md) | P1 | Verification | Automated guarantee check across seeds | done |
 | [SPAWN-1](tickets/m1-finite-ocean/SPAWN-1.md) | P1 | Spawn | Spawn on land near the centre | done |
 | [SPAWN-2](tickets/m10-preferred-biome/SPAWN-2.md) | P3 | Spawn | Start in the chosen biome at the centre of the island | open |
@@ -29,12 +31,14 @@ Fixes from the codebase reviews are tracked per review: [2026-11-22](tickets/m7-
 | [UI-1](tickets/m3-radius-setting/UI-1.md) | P1 | Radius UI | Radius field on the Create World screen | done |
 | [UI-2](tickets/m9-island-shape/UI-2.md) | P3 | Radius UI | Shape choice on the Create World screen and the server config | open |
 | [UI-3](tickets/m10-preferred-biome/UI-3.md) | P3 | Radius UI | Biome choices on the Create World screen and the server config | open |
+| [UI-4](tickets/m11-resource-islands/UI-4.md) | P3 | Radius UI | Resource islands toggle on the Create World screen and the server config | open |
 | [STR-1](tickets/m4-structure-guarantee/STR-1.md) | P1 | Structures | Measure which required structures vanilla misses | done |
 | [STR-2](tickets/m4-structure-guarantee/STR-2.md) | P1 | Structures | Fallback placement for missed structures | done |
 | [STR-3](tickets/m9-island-shape/STR-3.md) | P3 | Structures | Structure checks and fallback inside the island shape | open |
 | [TUNE-1](tickets/m5-polish/TUNE-1.md) | P2 | Tuning | Settle the open values: minimum radius, band width, anchor spacing | done |
 | [TUNE-2](tickets/m9-island-shape/TUNE-2.md) | P3 | Tuning | Settle the shape limits: thinnest rectangle, minimum and maximum area | open |
 | [TUNE-3](tickets/m10-preferred-biome/TUNE-3.md) | P3 | Tuning | Settle the lean strength, the home anchor size and the pickable biomes | open |
+| [TUNE-4](tickets/m11-resource-islands/TUNE-4.md) | P3 | Tuning | Settle the island distance, spacing, size and materials | open |
 
 ## Order
 
@@ -87,3 +91,10 @@ Milestone 10, the preferred biome (start in it, see more of it, or both; open de
 21. ANC-5
 22. UI-3
 23. TUNE-3
+
+Milestone 11, resource islands (small one-material islands past the radius; open decisions in [m11-resource-islands](tickets/m11-resource-islands/README.md)):
+
+24. ISL-1
+25. ISL-2
+26. UI-4
+27. TUNE-4
