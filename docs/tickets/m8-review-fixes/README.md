@@ -24,7 +24,7 @@ validated, and the code reads plainly.
 | 09 | [Replace array-filling lambdas with loops](09-array-filling-lambdas.md) | Readability | Low | done |
 | 10 | [Replace `int[]` points with a record](10-int-array-points.md) | Readability | Low | done |
 | 11 | [Readability nits](11-readability-nits.md) | Readability | Low | done |
-| 12 | [Remove leftovers](12-remove-leftovers.md) | Cleanup | Low | open: in-game check |
+| 12 | [Remove leftovers](12-remove-leftovers.md) | Cleanup | Low | done |
 
 Suggested order:
 
