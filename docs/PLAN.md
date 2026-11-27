@@ -20,17 +20,21 @@ Fixes from the codebase reviews are tracked per review: [2026-11-22](tickets/m7-
 | [EDGE-4](tickets/m9-island-shape/EDGE-4.md) | P3 | Edge | Island shape in the generator settings: circle, rectangle | open |
 | [TEST-1](tickets/m1-finite-ocean/TEST-1.md) | P1 | Verification | Automated guarantee check across seeds | done |
 | [SPAWN-1](tickets/m1-finite-ocean/SPAWN-1.md) | P1 | Spawn | Spawn on land near the centre | done |
+| [SPAWN-2](tickets/m10-preferred-biome/SPAWN-2.md) | P3 | Spawn | Start in the chosen biome at the centre of the island | open |
 | [ANC-1](tickets/m2-biome-guarantee/ANC-1.md) | P1 | Anchors | Spike: plan anchors once per world from the seeded climate | done |
 | [ANC-2](tickets/m2-biome-guarantee/ANC-2.md) | P1 | Anchors | Anchor planner | done |
 | [ANC-3](tickets/m2-biome-guarantee/ANC-3.md) | P1 | Anchors | Anchor density function: steer climate toward each anchor | open |
 | [ANC-4](tickets/m9-island-shape/ANC-4.md) | P3 | Anchors | Plan anchors inside the island shape | open |
+| [ANC-5](tickets/m10-preferred-biome/ANC-5.md) | P3 | Anchors | Lean the island's climate toward the chosen biome | open |
 | [UI-1](tickets/m3-radius-setting/UI-1.md) | P1 | Radius UI | Radius field on the Create World screen | done |
 | [UI-2](tickets/m9-island-shape/UI-2.md) | P3 | Radius UI | Shape choice on the Create World screen and the server config | open |
+| [UI-3](tickets/m10-preferred-biome/UI-3.md) | P3 | Radius UI | Biome choices on the Create World screen and the server config | open |
 | [STR-1](tickets/m4-structure-guarantee/STR-1.md) | P1 | Structures | Measure which required structures vanilla misses | done |
 | [STR-2](tickets/m4-structure-guarantee/STR-2.md) | P1 | Structures | Fallback placement for missed structures | done |
 | [STR-3](tickets/m9-island-shape/STR-3.md) | P3 | Structures | Structure checks and fallback inside the island shape | open |
 | [TUNE-1](tickets/m5-polish/TUNE-1.md) | P2 | Tuning | Settle the open values: minimum radius, band width, anchor spacing | done |
 | [TUNE-2](tickets/m9-island-shape/TUNE-2.md) | P3 | Tuning | Settle the shape limits: thinnest rectangle, minimum and maximum area | open |
+| [TUNE-3](tickets/m10-preferred-biome/TUNE-3.md) | P3 | Tuning | Settle the lean strength, the home anchor size and the pickable biomes | open |
 
 ## Order
 
@@ -76,3 +80,10 @@ Milestone 9, the island shape (round, square, rectangle; shape ideas and open de
 17. STR-3
 18. UI-2
 19. TUNE-2
+
+Milestone 10, the preferred biome (start in it, see more of it, or both; open decisions and pickable biomes in [m10-preferred-biome](tickets/m10-preferred-biome/README.md)):
+
+20. SPAWN-2
+21. ANC-5
+22. UI-3
+23. TUNE-3
