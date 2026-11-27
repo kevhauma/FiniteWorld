@@ -2,6 +2,26 @@
 
 Each release's section becomes its GitHub release notes: the `release` workflow publishes the text under `## <version>`. Versions follow Minecraft: `<minecraft version>.<patch>`, so 26.3.1 is the second release for Minecraft 26.3.
 
+## 26.3.2
+
+Worlds made with 26.3.0 or 26.3.1 load unchanged. **Requires** Minecraft 26.3, Fabric Loader 0.20.1+, Fabric API 0.166.2+ and Java 25.
+
+### Fixed
+
+- **Customize no longer crashes** when a datapack replaces the Finite world type's Overworld. The button just stays on the Create World screen (M8-06).
+- **Fallback outposts keep away from villages.** A pillager outpost placed by the structure guarantee now keeps vanilla's 10-chunk gap from villages, including villages the guarantee placed itself. On one tested world it had landed on top of a village (M8-04).
+- **Fallback structures land in their own biomes more often.** The structure guarantee now searches around every biome a structure can use, nearest first, instead of trying one biome across the whole island before the next (M8-01).
+- **Bad datapack settings fail early and clearly.** An anchor plan whose `band` leaves no room inside its `radius` is rejected when the datapack loads, naming both values. If anchor planning fails anyway, the crash log says "Anchor planning failed" with the real cause directly below it (M8-05, M8-02).
+
+### Changed
+
+- **Quieter logs.** The mod writes one line per world at INFO (anchors planned, time, plan hash). The biome checklist and the per-structure fallback lines are at DEBUG (M8-08).
+- **For datapack authors:** `finiteworld:edge` now only accepts a `radius` from 3,000 to 20,000, like `edge_cap` and `anchor_plan`. The spawn distance term is built from vanilla density functions instead of an `edge` node; spawns are unchanged (M8-07).
+
+### Known issues
+
+- Along some stretches the coast still traces the circle, for example ~1,700 blocks of seed 12345's west coast at radius 3,000 (EDGE-3).
+
 ## 26.3.1
 
 ### Fixed
